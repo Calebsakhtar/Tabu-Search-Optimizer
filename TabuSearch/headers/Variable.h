@@ -49,6 +49,21 @@ namespace TS {
 
 		// Get the feasible regions
 		std::vector<std::vector<double>> get_feas_regs() const { return m_feasible_regions; };
+
+		// Overload the comparison operators
+		// (Code obtained from: https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading)
+		friend bool operator == (const Variable& lhs, const Variable& rhs) {
+			return lhs.get_value() == rhs.get_value(); };
+		friend bool operator != (const Variable& lhs, const Variable& rhs) {
+			return !operator == (lhs, rhs); };
+		friend bool operator < (const Variable& lhs, const Variable& rhs) {
+			return lhs.get_value() < rhs.get_value();};
+		friend bool operator > (const Variable& lhs, const Variable& rhs) {
+			return  operator < (rhs, lhs); };
+		friend bool operator <= (const Variable& lhs, const Variable& rhs) {
+			return !operator > (lhs, rhs); };
+		friend bool operator >= (const Variable& lhs, const Variable& rhs) {
+			return !operator < (lhs, rhs); };
 	};
 
 }

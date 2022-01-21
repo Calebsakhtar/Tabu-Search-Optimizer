@@ -17,6 +17,6 @@ namespace TS {
 		m_val = value;
 		m_step = stepsize;
 		m_name = name;
-	}	
+	}
 
 }
