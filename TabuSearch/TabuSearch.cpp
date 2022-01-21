@@ -2,10 +2,28 @@
 //
 
 #include <iostream>
+#include <vector>
+#include <string>
+#include <math.h>
+
+#include "headers/Variable.h"
 
 int main()
 {
+    // Create two variables
+    std::vector<double> feasible_region = { 0, 1 };
+    std::vector<std::vector<double>> feasible_regions = { feasible_region };
+    TS::Variable var1(false, feasible_regions, 1, 10, 1, "a");
+    TS::Variable var2(false, feasible_regions, 1, 9, 1, "b");
+
+    // Test whether the "<" operator works as expected
+    if (!(var1 < var2)) {
+        std::cout << "This works!\n\n";
+    }
+    
+    // Finish the test
     std::cout << "Hello World!\n";
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
