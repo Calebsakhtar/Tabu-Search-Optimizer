@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "headers/Variable.h"
+#include "headers/Configuration.h"
 
 int main()
 {
@@ -18,7 +19,13 @@ int main()
 
     // Test whether the "<" operator works as expected
     if (!(var1 < var2)) {
-        std::cout << "This works!\n\n";
+        std::cout << "The < operator works!\n\n";
+    }
+
+    // Make and test the configuration
+    TS::Config config = { var1, var2 };
+    if (config[1] == var2) {
+        std::cout << "The configuration works!\n\n";
     }
     
     // Finish the test
