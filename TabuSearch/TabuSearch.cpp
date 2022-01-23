@@ -8,6 +8,7 @@
 
 #include "headers/Variable.h"
 #include "headers/Config.h"
+#include "headers/STM.h"
 
 int main()
 {
@@ -27,7 +28,31 @@ int main()
     if (config[1] == var2) {
         std::cout << "The configuration works!\n\n";
     }
+
+    // Test the STM
+    TS::STM STM(3, config);
+    TS::Config config2 = { var2, var1 };
+
+    if (!STM.in_STM(config2)) {
+        std::cout << "The in_STM method works!\n\n";
+    }
     
+    // Test the Addition of new elements to the STM
+    STM.add_to_STM(config2);
+
+    if (STM.in_STM(config2)) {
+        std::cout << "The add_to_STM method works!\n\n";
+    }
+
+    // Test the circular nature of the STM
+    for (size_t i = 0; i < 7; i++) {
+        STM.add_to_STM(config2);
+    }
+
+    if (!STM.in_STM(config)) {
+        std::cout << "The STM is circular!\n\n";
+    }
+
     // Finish the test
     std::cout << "Hello World!\n";
 
