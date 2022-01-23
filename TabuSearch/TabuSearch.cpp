@@ -24,14 +24,14 @@ int main()
     }
 
     // Make and test the configuration
-    TS::Config config = { var1, var2 };
+    TS::Config config({ var1, var2 });
     if (config[1] == var2) {
         std::cout << "The configuration works!\n\n";
     }
 
     // Test the STM
     TS::STM STM(3, config);
-    TS::Config config2 = { var2, var1 };
+    TS::Config config2({ var2, var1 });
 
     if (!STM.in_STM(config2)) {
         std::cout << "The in_STM method works!\n\n";

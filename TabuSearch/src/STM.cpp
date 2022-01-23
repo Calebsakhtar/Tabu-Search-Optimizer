@@ -29,7 +29,7 @@ namespace TS {
 			Config current_config_STM = m_configs[i];
 
 			// Check each variable in this configuration
-			for (size_t j = 1; j < candidate_config.size(); j++) {
+			for (size_t j = 1; j < candidate_config.size_vars(); j++) {
 				Variable current_var_STM = current_config_STM[j];
 				Variable current_var_candidate = candidate_config[j];
 
