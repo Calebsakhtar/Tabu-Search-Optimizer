@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "headers/Variable.h"
-#include "headers/Configuration.h"
+#include "headers/Config.h"
 
 int main()
 {

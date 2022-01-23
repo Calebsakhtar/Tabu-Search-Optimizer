@@ -39,10 +39,10 @@ namespace TS {
 		double get_step() const { return m_step; };
 
 		// Set the variable value
-		void set_value(const double& val) { m_val = val; };
+		void set_val(const double& val) { m_val = val; };
 
 		// Get the variable value
-		double get_value() const { return m_val; };
+		double get_val() const { return m_val; };
 
 		// Get the variable name
 		std::string get_name() const { return m_name; };
@@ -50,14 +50,23 @@ namespace TS {
 		// Get the feasible regions
 		std::vector<std::vector<double>> get_feas_regs() const { return m_feasible_regions; };
 
+		// Say whether the variable is discrete or not
+		bool get_discrete() const { return m_discrete; };
+
+		// Check whether two variables are the same
+		bool same_variable(const Variable& other) const;
+
+		// Check whether two variables are the relative to the step size of the next variable
+		bool same_variable_step(const Variable& other) const;
+
 		// Overload the comparison operators
 		// (Code obtained from: https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading)
 		friend bool operator == (const Variable& lhs, const Variable& rhs) {
-			return lhs.get_value() == rhs.get_value(); };
+			return lhs.get_val() == rhs.get_val(); };
 		friend bool operator != (const Variable& lhs, const Variable& rhs) {
 			return !operator == (lhs, rhs); };
 		friend bool operator < (const Variable& lhs, const Variable& rhs) {
-			return lhs.get_value() < rhs.get_value();};
+			return lhs.get_val() < rhs.get_val();};
 		friend bool operator > (const Variable& lhs, const Variable& rhs) {
 			return  operator < (rhs, lhs); };
 		friend bool operator <= (const Variable& lhs, const Variable& rhs) {
