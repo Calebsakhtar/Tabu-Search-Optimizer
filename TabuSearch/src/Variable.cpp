@@ -23,39 +23,36 @@ namespace TS {
 	bool Variable::same_variable(const Variable& other) const {
 
 		// Keep a tally of how many things are the same
-		int counter = 0;
+		bool same = true;
 
-		if (m_discrete == other.get_discrete()) { counter++; }
-		if (m_name == other.get_name()) { counter++; }
-		if (std::abs(m_val - other.get_val()) < 1e-6) { counter++; }
+		// Get the step size of the input variable
+		double stepsize = other.get_step();
+
+		if (m_discrete != other.get_discrete()) { same = false; }
+		if (m_name != other.get_name()) { same = false; }
+		if (std::abs(m_val - other.get_val()) > 1e-6) { same = false; }
 
 		// I did not check for the same feasible regions
 
-		if (counter > 2) {
-			return true;
-		}
-		return false;
+		return same;
 	};
 
 	// Check whether two variables are the relative to the step size of the next variable
 	bool Variable::same_variable_step(const Variable& other) const {
 
 		// Keep a tally of how many things are the same
-		int counter = 0;
+		bool same = true;
 
-		// 
+		// Get the step size of the input variable
 		double stepsize = other.get_step();
 
-		if (m_discrete == other.get_discrete()) { counter++; }
-		if (m_name == other.get_name()) { counter++; }
-		if (std::abs(m_val - other.get_val()) < stepsize / 4) { counter++; }
+		if (m_discrete != other.get_discrete()) { same = false; }
+		if (m_name != other.get_name()) { same = false; }
+		if (std::abs(m_val - other.get_val()) > stepsize / 4) { same = false; }
 
 		// I did not check for the same feasible regions
 
-		if (counter > 2) {
-			return true;
-		}
-		return false;
+		return same;
 	};
 
 }
