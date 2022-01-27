@@ -2,22 +2,20 @@
 #include <string>
 #include <math.h>
 
-#include "../headers/IM.h"
-#include "../../MDR-Test/MDR Test Project/headers/DesignClasses.h"
-#include "../../MDR-Test/MDR Test Project/headers/MDRFunctions.h"
+#include "../headers/ParetoMemory.h"
 
 namespace TS {
 
 	// Intended constructor for the Variable class
-	IM::IM(const Config& sample_config) {
+	ParetoMemory::ParetoMemory(const Config& sample_config) {
 
 		std::vector<Config> configs = { sample_config };
 
 		m_configs = configs;
 	}
 
-	// Replace the oldest configuration of the IM with the new point visited
-	bool IM::consider_config(const Config& new_config) {
+	// Replace the oldest configuration of the ParetoMemory with the new point visited
+	bool ParetoMemory::consider_config(const Config& new_config) {
 		
 		
 		for (size_t i = 0; i < m_configs.size(); i++) {
@@ -25,7 +23,7 @@ namespace TS {
 			MDR::Design current_design = current_config.get_performances();
 			MDR::Design ip_design = new_config.get_performances();
 
-			// Check that no members of the IM dominate the new config
+			// Check that no members of the ParetoMemory dominate the new config
 			if (MDR::A_dominates_B(current_design, ip_design)) {
 				return false;
 			}
@@ -35,9 +33,10 @@ namespace TS {
 			}
 		}
 
-		// Add the candidate design to the IM
+		// Add the candidate design to the ParetoMemory
 		m_configs.push_back(new_config);
 
+		// The candidate configuration has been added to the object, so return true
 		return true;
 	}
 
