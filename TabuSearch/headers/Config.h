@@ -46,6 +46,9 @@ namespace TS {
 		// Get the performance metrics
 		MDR::Design get_performances() const { return m_performances; };
 
+		// Get the ranks
+		std::vector<size_t> get_ranks() const { return m_performances.get_ranks(); };
+
 		// Return the size of the variables
 		size_t size_vars() const { return m_vars.size(); };
 
