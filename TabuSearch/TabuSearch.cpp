@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <array>
 
 #include "headers/Variable.h"
 #include "headers/Config.h"
@@ -13,8 +14,8 @@
 int main()
 {
     // Create two variables
-    std::vector<double> feasible_region = { 0, 1 };
-    std::vector<std::vector<double>> feasible_regions = { feasible_region };
+    std::array<double,2> feasible_region = { 0, 1 };
+    std::vector<std::array<double, 2>> feasible_regions = { feasible_region };
     TS::Variable var1(false, feasible_regions, 1, 10, 1, "a");
     TS::Variable var2(false, feasible_regions, 1, 9, 1, "b");
 

@@ -7,8 +7,8 @@
 namespace TS {
 
 	// Intended constructor for the Variable class
-	Variable::Variable(const bool& discrete, const std::vector<std::vector<double>>& feasible_regions,
-		const double& scale, const double& value, const double& stepsize, 
+	Variable::Variable(const bool& discrete, const std::vector<std::array<double, 2>>& feasible_regions,
+		const double& scale, const double& value, const double& stepsize,
 		const std::string& name) {
 
 		m_discrete = discrete;

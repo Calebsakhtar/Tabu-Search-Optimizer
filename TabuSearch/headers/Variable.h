@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 namespace TS {
 
 	class Variable {
 		bool m_discrete = false; // Stores whether the variable is discrete or not
-		std::vector<std::vector<double>> m_feasible_regions; // Stores the ranges of feasible region 
+		std::vector<std::array<double,2>> m_feasible_regions; // Stores the ranges of feasible region 
 		double m_scale = 1; // Stores the scale of the variable (i.e. the size of the minstep)
 		double m_step = 0; // Value of the current stepsize
 		double m_val = 0; // Value of the variable
@@ -19,7 +20,7 @@ namespace TS {
 		Variable() {};
 
 		// Intended constructor
-		Variable(const bool& discrete, const std::vector<std::vector<double>>& feasible_regions,
+		Variable(const bool& discrete, const std::vector<std::array<double, 2>>& feasible_regions,
 			const double& scale, const double& value, const double& stepsize,
 			const std::string& name);
 
@@ -48,7 +49,7 @@ namespace TS {
 		std::string get_name() const { return m_name; };
 
 		// Get the feasible regions
-		std::vector<std::vector<double>> get_feas_regs() const { return m_feasible_regions; };
+		std::vector<std::array<double, 2>> get_feas_regs() const { return m_feasible_regions; };
 
 		// Say whether the variable is discrete or not
 		bool get_discrete() const { return m_discrete; };
