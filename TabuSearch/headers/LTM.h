@@ -25,7 +25,6 @@ namespace TS {
 
 		// Choose a random within the least visited region so far
 		Config diversify(std::default_random_engine& generator) const;
-
 	};
 }
 

@@ -127,17 +127,20 @@ namespace TS
 			}
 
 			// Generate the value for the current variable 
-			std::uniform_real_distribution<double> distribution(range_start, range_end);
-			double gen_number = distribution(generator);
+			double gen_number = 0;
 
 			// Account for discrete variables
 			if (current_var.get_discrete()) {
-				// If the variable is discrete, floor it to make it discrete
-				current_var.set_val(floor(gen_number));
+				std::uniform_int_distribution<> distribution(range_start, range_end);
+				gen_number = static_cast<double>(distribution(generator));
 			}
 			else {
-				current_var.set_val(gen_number);
+				// Generate the value for the current variable 
+				std::uniform_real_distribution<double> distribution(range_start, range_end);
+				gen_number = distribution(generator);
 			}
+
+			current_var.set_val(gen_number);
 
 			result_vars[i] = current_var;
 		}
