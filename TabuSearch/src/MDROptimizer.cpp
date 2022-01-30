@@ -8,7 +8,7 @@ namespace TS {
 
 	// Intended constructor for the Variable class
 	MDROptimizer::MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
-		const Config& initial_config) {
+		const Config& initial_config, const unsigned seed) {
 
 		// Save the dominance relations and the initial configuration
 		m_dom_rels = dom_rels;
@@ -30,6 +30,12 @@ namespace TS {
 		m_IM = ip_IM;
 
 		// Initialize the LTM
+		LTM ip_LTM(initial_config);
+		m_LTM = ip_LTM;
+
+		// Initialize the Random Number Generator
+		std::default_random_engine generator(seed);
+		m_generator = generator;
 	}	
 
 }
