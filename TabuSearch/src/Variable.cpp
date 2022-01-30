@@ -55,4 +55,24 @@ namespace TS {
 		return same;
 	};
 
+	// Check whether a value lies within the feasible region
+	bool Variable::is_feasible(size_t& feasible_idx) const {
+
+		// Check whether the value lies within any of the feasible regions
+		for (size_t i = 0; i < m_feasible_regions.size(); i++) {
+			std::array<double, 2> current_region = m_feasible_regions[i];
+
+			if ((current_region[0] <= m_val) && (current_region[1] >= m_val)) {
+				// Give the feasible region index
+				feasible_idx = i;
+
+				// If the value is within a feasible region, return true
+				return true;
+			}
+		}
+
+		// If the value was in no feasible region, return false
+		return false;
+	}
+
 }

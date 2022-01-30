@@ -60,6 +60,9 @@ namespace TS {
 		// Check whether two variables are the relative to the step size of the next variable
 		bool same_variable_step(const Variable& other) const;
 
+		// Check whether a value lies within the feasible region
+		bool is_feasible(size_t& feasible_idx) const;
+
 		// Overload the comparison operators
 		// (Code obtained from: https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading)
 		friend bool operator == (const Variable& lhs, const Variable& rhs) {
