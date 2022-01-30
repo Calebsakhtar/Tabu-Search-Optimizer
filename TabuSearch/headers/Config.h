@@ -28,20 +28,13 @@ namespace TS {
 
 		// Intended constructor (with performance metrics)
 		Config(const std::vector<Variable>& vars,
-			const MDR::Design& performances) {
-			m_vars = vars;
-			m_performances = performances;
-			m_perfs_evaluated = true;
-		};
+			const MDR::Design& performances);
 
 		// Copy constructor (Currently Disabled)
 		//Config(const Config& ip_var) {};
 
 		// Set the performance metrics
-		void set_performances(const MDR::Design& performances) {
-			m_performances = performances;
-			m_perfs_evaluated = true;
-		};
+		void set_performances(const MDR::Design& performances);
 
 		// Get the performance metrics
 		MDR::Design get_performances() const { return m_performances; };
@@ -54,6 +47,9 @@ namespace TS {
 
 		// Return the size of the variables
 		size_t size_vars() const { return m_vars.size(); };
+
+		// Return whether the variable is feasible or not
+		bool is_feasible() const;
 
 		// Overload the index operator
 		Variable operator [](int i) const { return m_vars[i]; }
