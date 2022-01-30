@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <random>
 
 #include "Config.h"
 #include "../../MDR-Test/MDR Test Project/headers/DesignClasses.h"
@@ -40,6 +41,9 @@ namespace TS {
 
 		// Add a new configuration to the pareto memory and update the ranks of every config
 		void add_config_update_ranks(const Config& new_config);
+
+		// Perform an intesnification move (TO BE USED IN THE IM)
+		Config intensify(std::default_random_engine& generator);
 
 		// Overload the index operator
 		Config operator [](int i) const { return m_configs[i]; };

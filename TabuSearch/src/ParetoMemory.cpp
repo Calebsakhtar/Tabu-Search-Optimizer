@@ -100,5 +100,16 @@ namespace TS {
 		// Add the new design to the existing designs and update the ParetoMemory
 		existing_designs.push_back(new_design);
 		set_perf_vect(existing_designs);
-	};
+	}
+
+	// Perform an intesnification move (TO BE USED IN THE IM)
+	Config ParetoMemory::intensify(std::default_random_engine& generator) {
+		
+		// Choose the index of the point to move to randomly
+		std::uniform_int_distribution<size_t> distribution(0, m_configs.size());
+		size_t chosen_idx = distribution(generator);
+
+		// Return the chosen config
+		return m_configs[chosen_idx];
+	}
 }
