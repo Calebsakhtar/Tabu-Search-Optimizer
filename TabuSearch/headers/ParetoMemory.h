@@ -34,6 +34,10 @@ namespace TS {
 		// Replace the oldest configuration of the ParetoMemory with the new point visited
 		bool consider_config(const Config& new_config);
 
+		// Replace the oldest configuration of the ParetoMemory with the new point visited
+		// (using MDR)
+		bool consider_config_MDR(const Config& new_config);
+
 		// Add a new configuration to the pareto memory and update the ranks of every config
 		void add_config_update_ranks(const Config& new_config);
 
