@@ -36,6 +36,9 @@ namespace TS {
 		// Set the performance metrics
 		void set_performances(const MDR::Design& performances);
 
+		// Change the value of the selected variable by the stepsize
+		void change_var(const size_t& idx, const bool& increase);
+
 		// Perform a reduction move
 		void reduce(const double& step_size);
 

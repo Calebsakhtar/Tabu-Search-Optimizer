@@ -19,6 +19,21 @@ namespace TS {
 		m_perfs_evaluated = true;
 	}
 
+	// Change the value of the selected variable by the stepsize
+	void Config::change_var(const size_t& idx, const bool& increase) {
+		// Get the stepsize
+		double step_size = m_vars[idx].get_step();
+		double value = m_vars[idx].get_val();
+
+		// Increase/Decrease the variable value, as required
+		if (increase) {
+			m_vars[idx].set_val(value + step_size);
+		}
+		else {
+			m_vars[idx].set_val(value - step_size);
+		}
+	}
+
 	// Perform a reduction move
 	void Config::reduce(const double& reduction_factor) {
 		// Iterate at each variable
