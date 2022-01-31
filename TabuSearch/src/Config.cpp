@@ -19,6 +19,12 @@ namespace TS {
 		m_perfs_evaluated = true;
 	}
 
+	// Set the previous move data
+	void Config::set_prev_move_data(const bool& increasing, const size_t& move_idx) {
+		m_prev_move_increasing = increasing;
+		m_prev_move_idx = move_idx;
+	}
+
 	// Change the value of the selected variable by the stepsize
 	void Config::change_var(const size_t& idx, const bool& increase) {
 		// Get the stepsize
@@ -44,6 +50,12 @@ namespace TS {
 				m_vars[i].set_step(reduction_factor * current_stepsize);
 			}
 		}
+	}
+
+	// Set the previous move data
+	void Config::get_prev_move_data(bool& increasing, size_t& move_idx) const {
+		increasing = m_prev_move_increasing;
+		move_idx = m_prev_move_idx;
 	}
 
 	bool Config::is_feasible() const {

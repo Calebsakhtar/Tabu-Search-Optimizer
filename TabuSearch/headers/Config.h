@@ -18,6 +18,8 @@ namespace TS {
 												 // of the configuration
 		bool m_perfs_evaluated = false; // Stores whether the performances have
 										// been evaluated or not
+		bool m_prev_move_increasing = true; // Store whether the previous move was an increase
+		size_t m_prev_move_idx = 0; // Store the index of the previous move
 
 	public:
 		// Default constructor (constructs an empty object)
@@ -36,6 +38,9 @@ namespace TS {
 		// Set the performance metrics
 		void set_performances(const MDR::Design& performances);
 
+		// Set the previous move data
+		void set_prev_move_data(const bool& increasing, const size_t& move_idx);
+
 		// Change the value of the selected variable by the stepsize
 		void change_var(const size_t& idx, const bool& increase);
 
@@ -53,6 +58,9 @@ namespace TS {
 
 		// Return the size of the variables
 		size_t size_vars() const { return m_vars.size(); };
+
+		// Get the previous move data
+		void get_prev_move_data(bool& increasing, size_t& move_idx) const;
 
 		// Return whether all variables are feasible or not
 		bool is_feasible() const;
