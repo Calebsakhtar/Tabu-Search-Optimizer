@@ -29,6 +29,9 @@ namespace TS {
 		// Get a list of the performances
 		std::vector<MDR::Design> get_perf_vect() const;
 
+		// Return the current configuration vector
+		std::vector<Config> get_configs() const { return m_configs; };
+
 		// Set the performances from an input vector of performances
 		void set_perf_vect(const std::vector<MDR::Design>& ip_vect);
 
