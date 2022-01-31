@@ -36,6 +36,9 @@ namespace TS {
 		// Set the performance metrics
 		void set_performances(const MDR::Design& performances);
 
+		// Perform a reduction move
+		void reduce(const double& step_size);
+
 		// Get the performance metrics
 		MDR::Design get_performances() const { return m_performances; };
 
