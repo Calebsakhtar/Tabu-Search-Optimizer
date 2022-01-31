@@ -38,6 +38,10 @@ namespace TS {
 		else {
 			m_vars[idx].set_val(value - step_size);
 		}
+
+		// Store the details of this move
+		m_prev_move_idx = idx;
+		m_prev_move_increasing = increase;
 	}
 
 	// Perform a reduction move
