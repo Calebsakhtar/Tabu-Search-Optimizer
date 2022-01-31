@@ -51,8 +51,11 @@ namespace TS {
 		// Return the size of the variables
 		size_t size_vars() const { return m_vars.size(); };
 
-		// Return whether the variable is feasible or not
+		// Return whether all variables are feasible or not
 		bool is_feasible() const;
+
+		// Return whether the minimum step size has been reached
+		bool min_size_reached() const;
 
 		// Overload the index operator
 		Variable operator [](int i) const { return m_vars[i]; }

@@ -48,4 +48,25 @@ namespace TS {
 		// If all variables are feasible, return true
 		return true;
 	}
+
+	// Return whether the minimum step size has been reached
+	bool Config::min_size_reached() const {
+
+		// Check each variable
+		for (size_t i = 0; i < m_vars.size(); i++) {
+			// If the variable is not discrete, check the stepsize
+			if (!m_vars[i].get_discrete()) {
+				double current_stepsize = m_vars[i].get_step();
+
+				// Check if the current step size is smaller than the minimum allowed
+				if (current_stepsize > m_vars[i].get_scale()) {
+					return false;
+				}
+			}
+		}
+
+		// All variables must have converged for this to return true
+		return true;
+
+	}
 }
