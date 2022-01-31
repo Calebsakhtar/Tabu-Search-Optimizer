@@ -8,12 +8,16 @@ namespace TS {
 
 	// Intended constructor for the Variable class
 	MDROptimizer::MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
-		const Config& initial_config, const unsigned seed, const size_t INTENSIFY,
-		const size_t DIVERSIFY, const size_t REDUCE) {
+		const Config& initial_config, const double reduction_factor, const unsigned seed,
+		const size_t INTENSIFY, const size_t DIVERSIFY, const size_t REDUCE, 
+		const size_t max_iter_num) {
 
 		// Save the dominance relations and the initial configuration
 		m_dom_rels = dom_rels;
 		m_initial_config = initial_config;
+
+		// Save the maximum allowed iterations
+		m_max_iter_num = max_iter_num;
 
 		// Save the counter milestones
 		m_INTENSIFY = INTENSIFY;
@@ -45,6 +49,7 @@ namespace TS {
 	}
 
 	void MDROptimizer::perform_optimization() {
+
 	
 	}
 
