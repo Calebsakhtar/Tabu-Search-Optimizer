@@ -20,6 +20,12 @@ namespace TS {
 		Config m_initial_config; // Stores a sample config
 		std::default_random_engine m_generator; // Stores the RN Generator
 		
+		// Store the counter milestones
+		size_t m_counter = 0;
+		size_t m_INTENSIFY = 10;
+		size_t m_DIVERSIFY = 15;
+		size_t m_REDUCE = 25;
+
 		// Store the different data memories
 		STM m_STM; // Short-Term-Memory
 		ParetoMemory m_MTM; // Medium-Term-Memory
@@ -33,12 +39,16 @@ namespace TS {
 
 		// Intended constructor
 		MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
-			const Config& sample_config, const unsigned seed);
+			const Config& initial_config, const unsigned seed, const size_t INTENSIFY = 10,
+			const size_t DIVERSIFY = 15, const size_t REDUCE = 25);
 
 		// Copy constructor (Currently Disabled)
 		//Optimizer(const Optimizer& ip_var) {};
 
+		// Perform the optimization routine
+		void perform_optimization();
 	};
+
 
 }
 
