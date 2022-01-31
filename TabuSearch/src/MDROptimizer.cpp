@@ -54,70 +54,82 @@ namespace TS {
 	void MDROptimizer::perform_optimization() {
 		
 		// Set the current point as the initial point
-		Config current_point = m_initial_config;
+		Config current_config = m_initial_config;
 
 		// Store the number of variables
-		size_t num_vars = current_point.get_vars().size();
+		size_t num_vars = current_config.get_vars().size();
 		
 		// Main loop begin (stop when either the minimum size is reached or the
 		// maximum iteration number is reached)
-		while (!current_point.min_size_reached() && (m_iter_num < m_max_iter_num)) {
+		while (!current_config.min_size_reached() && (m_iter_num < m_max_iter_num)) {
 			// Increase the iteration number
 			m_iter_num++;
 			
 			// Initialize a vector to store all the H&J points
-			std::vector<Config> HJ_points = {};
+			std::vector<Config> HJ_configs = {};
 
 			// Generate the candidate points using Hooke & Jeeves moves
 			for (size_t i = 0; i < num_vars; i++) {
 
 				// Increase the variable
-				Config HJ_point = current_point;
-				HJ_point.change_var(i, true);
-
+				Config HJ_config = current_config;
+				HJ_config.change_var(i, true);
 				
-				if (HJ_point.is_feasible()) {
+				if (HJ_config.is_feasible()) {
 					// Only add the point to the list of candidate points if it is feasible
-					HJ_points.push_back(HJ_point);
+					HJ_configs.push_back(HJ_config);
 				}
 
 				// Decrease the variable
-				HJ_point = current_point;
-				HJ_point.change_var(i, false);
+				HJ_config = current_config;
+				HJ_config.change_var(i, false);
 
-				if (HJ_point.is_feasible()) {
+				if (HJ_config.is_feasible()) {
 					// Only add the point to the list of candidate points if it is feasible
-					HJ_points.push_back(HJ_point);
+					HJ_configs.push_back(HJ_config);
 				}
 			}
 
 			// Initialize a vector to store all the candidate points
-			std::vector<Config> candidate_points = {};
+			std::vector<Config> candidate_configs = {};
 
 			// If there are more points than the maximum to be considered, choose the points
 			// to be considered at random by shuffling the H&J vector with the seeded generator
-			if (HJ_points.size() > m_HJ_num) {
-				std::shuffle(HJ_points.begin(), HJ_points.end(), m_generator);
+			if (HJ_configs.size() > m_HJ_num) {
+				std::shuffle(HJ_configs.begin(), HJ_configs.end(), m_generator);
 			}
 
 			// Include the first m_HJ_num points to be considered
 			for (size_t i = 0; i < m_HJ_num; i++) {
 				// Recover the point to be considered
-				Config candidate_point = HJ_points[i];
+				Config candidate_config = HJ_configs[i];
 
 				// Compute the objective function (result stored in candidate_point)
-				AircraftEval::compute_f(candidate_point);
+				AircraftEval::compute_f(candidate_config);
 
 				// Store the point in the set of candidate points
-				candidate_points.push_back(candidate_point);
+				candidate_configs.push_back(candidate_config);
+
+				// Add the canidate points to the All Point Memory (APM) and update its rank
+				m_APM.add_config_update_ranks(candidate_config);
 
 				// Protect against going out of index range
-				if (i + 1 >= HJ_points.size()) {
+				if (i + 1 >= HJ_configs.size()) {
 					break;
 				}
 			}
+			
+			// ParetoMemory has the functionality to update the rankings as required
+			std::vector<Config> first_config = { candidate_configs[0] };
+			ParetoMemory candidate_config_memory(first_config, m_dom_rels);
 
-			// NEXT BIT OF CODE GOES HERE
+			// Remove any non-dominant designs
+			for (size_t i = 1; i < candidate_configs.size(); i++) {
+				candidate_config_memory.consider_config_MDR(candidate_configs[i]);
+			}
+
+			// Recover the dominant
+			std::vector<Config> dominant_configs = candidate_config_memory.get_configs();
 
 		}
 	
