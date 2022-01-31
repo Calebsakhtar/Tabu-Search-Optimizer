@@ -144,6 +144,7 @@
     <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\LTM.cpp" />
     <ClCompile Include="src\MDROptimizer.cpp" />
+    <ClCompile Include="src\ObjectiveFunction.cpp" />
     <ClCompile Include="src\ParetoMemory.cpp" />
     <ClCompile Include="src\STM.cpp" />
     <ClCompile Include="src\Variable.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="headers\Config.h" />
     <ClInclude Include="headers\LTM.h" />
     <ClInclude Include="headers\MDROptimizer.h" />
+    <ClInclude Include="headers\ObjectiveFunction.h" />
     <ClInclude Include="headers\ParetoMemory.h" />
     <ClInclude Include="headers\STM.h" />
     <ClInclude Include="headers\Variable.h" />
