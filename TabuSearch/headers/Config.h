@@ -45,7 +45,7 @@ namespace TS {
 		void change_var(const size_t& idx, const bool& increase);
 
 		// Perform a reduction move
-		void reduce(const double& step_size);
+		void reduce(const double& reduction_factor);
 
 		// Get the performance metrics
 		MDR::Design get_performances() const { return m_performances; };
