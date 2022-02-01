@@ -16,6 +16,10 @@ namespace TS {
 		m_dom_rels = dom_rels;
 		m_initial_config = initial_config;
 
+		// Compute the objective function (result stored in candidate_point)
+		AircraftEval::compute_f(m_initial_config);
+		m_f_eval_num = 1;
+
 		// Save the maximum allowed iterations
 		m_f_eval_num_max = max_eval_num;
 
@@ -32,7 +36,7 @@ namespace TS {
 		m_STM = ip_STM;
 
 		// Initialize the MTM and the APM
-		std::vector<Config> config_vect = { initial_config };
+		std::vector<Config> config_vect = { m_initial_config };
 		ParetoMemory ip_MTM(config_vect, dom_rels);
 		m_MTM = ip_MTM;
 		m_APM = ip_MTM;
@@ -52,10 +56,6 @@ namespace TS {
 	}
 
 	void MDROptimizer::perform_optimization() {
-
-		// Compute the objective function (result stored in candidate_point)
-		AircraftEval::compute_f(m_initial_config);
-		m_f_eval_num++;
 
 		// Set the current point and the next as the initial point
 		Config current_config = m_initial_config;
@@ -116,6 +116,27 @@ namespace TS {
 
 			// Initialise whether a dominant point has been found
 			bool dominant_found = false;
+
+			// If all new points are either Tabu or Unfeasible, diversify
+			if (HJ_configs.size() < 1) {
+				current_config = m_LTM.diversify(m_generator);
+
+				// Compute the objective function
+				AircraftEval::compute_f(current_config);
+				m_f_eval_num++;
+
+				// Add the current point to the MTM, STM and LTM
+				m_MTM.consider_config(current_config);
+				m_STM.add_to_STM(current_config);
+				m_LTM.update_tally(current_config);
+
+				// Add the canidate points to the All Point Memory (APM) and update its rank
+				m_APM.add_config_update_ranks(current_config);
+
+				// Move to the next iteration
+				break;
+			}
+
 
 			// Loop to figure out the best generated point
 			while (!move_on) {
@@ -272,7 +293,7 @@ namespace TS {
 				current_config = m_IM.intensify(m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(next_config);
+				AircraftEval::compute_f(current_config);
 				m_f_eval_num++;
 
 				// Add the current point to the MTM, STM and LTM
@@ -288,7 +309,7 @@ namespace TS {
 				current_config = m_LTM.diversify(m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(next_config);
+				AircraftEval::compute_f(current_config);
 				m_f_eval_num++;
 
 				// Add the current point to the MTM, STM and LTM
