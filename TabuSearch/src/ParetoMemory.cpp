@@ -105,11 +105,10 @@ namespace TS {
 	// Perform an intesnification move (TO BE USED IN THE IM)
 	Config ParetoMemory::intensify(std::default_random_engine& generator) {
 		
-		// Choose the index of the point to move to randomly
-		std::uniform_int_distribution<size_t> distribution(0, m_configs.size());
-		size_t chosen_idx = distribution(generator);
+		// Shuffle the points vector
+		std::shuffle(m_configs.begin(), m_configs.end(), generator);
 
 		// Return the chosen config
-		return m_configs[chosen_idx];
+		return m_configs[0];
 	}
 }
