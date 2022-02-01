@@ -248,6 +248,9 @@ namespace TS {
 					new_MTM_config = new_MTM_config || m_MTM.consider_config(current_config);
 					m_STM.add_to_STM(current_config);
 					m_LTM.update_tally(current_config);
+
+					// Add the canidate points to the All Point Memory (APM) and update its rank
+					m_APM.add_config_update_ranks(current_config);
 				}
 			}
 
@@ -276,6 +279,9 @@ namespace TS {
 				m_MTM.consider_config(current_config);
 				m_STM.add_to_STM(current_config);
 				m_LTM.update_tally(current_config);
+
+				// Add the canidate points to the All Point Memory (APM) and update its rank
+				m_APM.add_config_update_ranks(current_config);
 			
 			}
 			else if (m_counter == m_DIVERSIFY) {
@@ -290,12 +296,16 @@ namespace TS {
 				m_STM.add_to_STM(current_config);
 				m_LTM.update_tally(current_config);
 
+				// Add the canidate points to the All Point Memory (APM) and update its rank
+				m_APM.add_config_update_ranks(current_config);
+
 			}
 			else if (m_counter == m_REDUCE) {
 				current_config.reduce(m_reduction_factor);
 			}
 
 		}
+
 	
 	}
 
