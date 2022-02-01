@@ -99,6 +99,8 @@ namespace TS {
 
 		// Add the new design to the existing designs and update the ParetoMemory
 		existing_designs.push_back(new_design);
+
+		m_configs.push_back(new_config);
 		set_perf_vect(existing_designs);
 	}
 
