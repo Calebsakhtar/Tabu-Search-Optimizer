@@ -18,6 +18,7 @@ namespace TS {
 
 		// Compute the objective function (result stored in candidate_point)
 		AircraftEval::compute_f(m_initial_config);
+		m_initial_config.initialize_ranks(m_dom_rels);
 		m_f_eval_num = 1;
 
 		// Save the maximum allowed iterations
@@ -124,6 +125,7 @@ namespace TS {
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);
 				m_f_eval_num++;
+				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config(current_config);
@@ -164,6 +166,7 @@ namespace TS {
 					// Compute the objective function (result stored in candidate_point)
 					AircraftEval::compute_f(candidate_config);
 					m_f_eval_num++;
+					candidate_config.initialize_ranks(m_dom_rels);
 
 					// Store the point in the set of candidate points
 					candidate_configs.push_back(candidate_config);
@@ -254,6 +257,7 @@ namespace TS {
 				// Compute the objective function (result stored in candidate_point)
 				AircraftEval::compute_f(next_config);
 				m_f_eval_num++;
+				next_config.initialize_ranks(m_dom_rels);
 
 				// Check whether this move dominates the current point
 				if (MDR::A_dominates_B_MDR(next_config.get_performances(),
@@ -295,6 +299,7 @@ namespace TS {
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);
 				m_f_eval_num++;
+				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config(current_config);
@@ -311,6 +316,7 @@ namespace TS {
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);
 				m_f_eval_num++;
+				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config(current_config);
