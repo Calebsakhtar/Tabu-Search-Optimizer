@@ -54,6 +54,12 @@ namespace TS {
 
 		// Perform the optimization routine
 		void perform_optimization();
+
+		// Retreive the optimization results
+		std::vector<Config> retreive_MTM() const { return m_MTM.get_configs(); };
+
+		// Retrieve all visited points
+		std::vector<Config> retrieve_all_pts() const { return m_APM.get_configs(); };
 	};
 
 
