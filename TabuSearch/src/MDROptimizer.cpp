@@ -118,7 +118,7 @@ namespace TS {
 			// Initialise whether a dominant point has been found
 			bool dominant_found = false;
 
-			// If all new points are either Tabu or Unfeasible, diversify
+			// If all new points are either Tabu or Unfeasible, diversify and reduce if necessary
 			if (HJ_configs.size() < 1) {
 				current_config = m_LTM.diversify(m_generator);
 
@@ -134,6 +134,15 @@ namespace TS {
 
 				// Add the canidate points to the All Point Memory (APM) and update its rank
 				m_APM.add_config_update_ranks(current_config);
+
+				// Increase the counter
+				m_counter++;
+
+				// Reduce if necessary
+				if (m_counter == m_REDUCE) {
+					current_config.reduce(m_reduction_factor);
+					m_counter = 0;
+				}
 
 				// Move to the next iteration
 				break;
@@ -329,6 +338,7 @@ namespace TS {
 			}
 			else if (m_counter == m_REDUCE) {
 				current_config.reduce(m_reduction_factor);
+				m_counter = 0;
 			}
 
 		}
