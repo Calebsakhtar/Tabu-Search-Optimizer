@@ -10,6 +10,7 @@
 #include "headers/Variable.h"
 #include "headers/Config.h"
 #include "headers/STM.h"
+#include "headers/MDROptimizer.h"
 
 int main()
 {
@@ -53,6 +54,35 @@ int main()
     if (!STM.in_STM(config)) {
         std::cout << "The STM is circular!\n\n";
     }
+
+    // MAIN OPTIMIZATION TEST
+    
+    // Specify the required parameters
+    MDR::DomRel dom_rel(0, 1);
+    std::vector<MDR::DomRel> dom_rels = { dom_rel };
+    size_t STM_size = 7;
+    double reduction_factor = 0.5;
+    unsigned seed = 1;
+    size_t INTENSIFY = 10;
+    size_t DIVERSIFY = 15;
+    size_t REDUCE = 25;
+    size_t max_eval_num = 2e5;
+    size_t HJ_num = 8;
+
+    // Initialize the variables and the vector containing them
+    std::array<double, 2> feas_reg_low = { 0., 0.45 };
+    std::array<double, 2> feas_reg_high = { 0.77, 1. };
+    std::vector<std::array<double, 2>> feas_regs = {feas_reg_low, feas_reg_high};
+    TS::Variable varA(false, feas_regs, 0.01, 0.2, 0.2, "Variable A");
+    TS::Variable varB(false, feas_regs, 0.01, 0.9, 0.2, "Variable B");
+    std::vector<TS::Variable> vars = { varA, varB };
+
+    TS::Config initial_point(vars);
+
+    TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, INTENSIFY,
+        DIVERSIFY, REDUCE, max_eval_num, HJ_num);
+
+    Optimizer.perform_optimization();
 
     // Finish the test
     std::cout << "Hello World!\n";
