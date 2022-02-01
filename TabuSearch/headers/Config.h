@@ -41,6 +41,9 @@ namespace TS {
 		// Set the previous move data
 		void set_prev_move_data(const bool& increasing, const size_t& move_idx);
 
+		// Initialize the rank data
+		void initialize_ranks(const std::vector<MDR::DomRel>& dom_rels);
+
 		// Change the value of the selected variable by the stepsize
 		void change_var(const size_t& idx, const bool& increase);
 

@@ -25,6 +25,14 @@ namespace TS {
 		m_prev_move_idx = move_idx;
 	}
 
+	// Initialize the rank data
+	void Config::initialize_ranks(const std::vector<MDR::DomRel>& dom_rels) {
+		std::vector<size_t> ranks(dom_rels.size(), 0);
+		MDR::Design perfs = get_performances();
+		perfs.set_ranks(ranks);
+		set_performances(perfs);
+	}
+
 	// Change the value of the selected variable by the stepsize
 	void Config::change_var(const size_t& idx, const bool& increase) {
 		// Get the stepsize
