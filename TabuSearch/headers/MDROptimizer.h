@@ -20,8 +20,9 @@ namespace TS {
 		std::vector<MDR::DomRel> m_dom_rels; // Stores the dominance relations
 		Config m_initial_config; // Stores a sample config
 		std::default_random_engine m_generator; // Stores the RN Generator
+		size_t m_f_eval_num = 0; // Stores the number of times the objective function is called
 		size_t m_iter_num = 0; // Stores the iteration number
-		size_t m_max_iter_num = 1e100; // Stores the maximum iteration number
+		size_t m_f_eval_num_max = 1e100; // Stores the maximum iteration number
 		size_t m_HJ_num = 8; // Stores the maximum number of H&J points considered
 		double m_reduction_factor = 0.5; // Stores the minimum reduction factor
 
@@ -46,7 +47,7 @@ namespace TS {
 		MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
 			const Config& initial_config, const double reduction_factor, const unsigned seed, 
 			const size_t INTENSIFY = 10, const size_t DIVERSIFY = 15, const size_t REDUCE = 25, 
-			const size_t max_iter_num = 1e100, const size_t HJ_num = 8);
+			const size_t max_eval_num = 1e100, const size_t HJ_num = 8);
 
 		// Copy constructor (Currently Disabled)
 		//Optimizer(const Optimizer& ip_var) {};

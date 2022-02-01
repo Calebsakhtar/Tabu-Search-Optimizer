@@ -10,14 +10,14 @@ namespace TS {
 	MDROptimizer::MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
 		const Config& initial_config, const double reduction_factor, const unsigned seed,
 		const size_t INTENSIFY, const size_t DIVERSIFY, const size_t REDUCE, 
-		const size_t max_iter_num, const size_t HJ_num) {
+		const size_t max_eval_num, const size_t HJ_num) {
 
 		// Save the dominance relations and the initial configuration
 		m_dom_rels = dom_rels;
 		m_initial_config = initial_config;
 
 		// Save the maximum allowed iterations
-		m_max_iter_num = max_iter_num;
+		m_f_eval_num_max = max_eval_num;
 
 		// Save the maximum number of H&J points allowed
 		m_HJ_num = HJ_num;
@@ -52,7 +52,11 @@ namespace TS {
 	}
 
 	void MDROptimizer::perform_optimization() {
-		
+
+		// Compute the objective function (result stored in candidate_point)
+		AircraftEval::compute_f(m_initial_config);
+		m_f_eval_num++;
+
 		// Set the current point and the next as the initial point
 		Config current_config = m_initial_config;
 		Config next_config = m_initial_config;
@@ -66,7 +70,7 @@ namespace TS {
 		
 		// Main loop begin (stop when either the minimum size is reached or the
 		// maximum iteration number is reached)
-		while (!current_config.min_size_reached() && (m_iter_num < m_max_iter_num)) {
+		while (!current_config.min_size_reached() && (m_f_eval_num < m_f_eval_num_max)) {
 			// Increase the iteration number
 			m_iter_num++;
 			
@@ -138,6 +142,7 @@ namespace TS {
 
 					// Compute the objective function (result stored in candidate_point)
 					AircraftEval::compute_f(candidate_config);
+					m_f_eval_num++;
 
 					// Store the point in the set of candidate points
 					candidate_configs.push_back(candidate_config);
@@ -208,9 +213,10 @@ namespace TS {
 			// Update the move data
 			current_config.get_prev_move_data(prev_increase, prev_idx);
 			
-			// Add the current point to the MTM and to the STM
-			m_MTM.consider_config(current_config);
+			// Add the current point to the MTM, STM and LTM
+			bool new_MTM_config = m_MTM.consider_config(current_config);
 			m_STM.add_to_STM(current_config);
+			m_LTM.update_tally(current_config);
 
 			// Add the remaining points to the IM
 			for (size_t i = 1; i < dominant_configs.size(); i++) {
@@ -224,6 +230,10 @@ namespace TS {
 				// Perform the same move as the previous move
 				next_config.change_var(prev_idx, prev_increase);
 
+				// Compute the objective function (result stored in candidate_point)
+				AircraftEval::compute_f(next_config);
+				m_f_eval_num++;
+
 				// Check whether this move dominates the current point
 				if (MDR::A_dominates_B_MDR(next_config.get_performances(),
 					current_config.get_performances(), m_dom_rels)) {
@@ -234,13 +244,56 @@ namespace TS {
 					// Update the move data
 					current_config.get_prev_move_data(prev_increase, prev_idx);
 
-					// Add the current point to the MTM and to the STM
-					m_MTM.consider_config(current_config);
+					// Add the current point to the MTM, STM and LTM
+					new_MTM_config = new_MTM_config || m_MTM.consider_config(current_config);
 					m_STM.add_to_STM(current_config);
+					m_LTM.update_tally(current_config);
 				}
 			}
 
+			// Check to see that the maximum number of evaluations has been reached
+			if (m_f_eval_num > m_f_eval_num_max) {
+				break;
+			}
 
+			// Reset or increase the counter as needed
+			if (new_MTM_config) {
+				m_counter = 0;
+			}
+			else {
+				m_counter++;
+			}
+
+			// Intensify, Diversify or Reduce as appropriate
+			if (m_counter == m_INTENSIFY){ 
+				current_config = m_IM.intensify(m_generator);
+
+				// Compute the objective function
+				AircraftEval::compute_f(next_config);
+				m_f_eval_num++;
+
+				// Add the current point to the MTM, STM and LTM
+				m_MTM.consider_config(current_config);
+				m_STM.add_to_STM(current_config);
+				m_LTM.update_tally(current_config);
+			
+			}
+			else if (m_counter == m_DIVERSIFY) {
+				current_config = m_LTM.diversify(m_generator);
+
+				// Compute the objective function
+				AircraftEval::compute_f(next_config);
+				m_f_eval_num++;
+
+				// Add the current point to the MTM, STM and LTM
+				m_MTM.consider_config(current_config);
+				m_STM.add_to_STM(current_config);
+				m_LTM.update_tally(current_config);
+
+			}
+			else if (m_counter == m_REDUCE) {
+				current_config.reduce(m_reduction_factor);
+			}
 
 		}
 	
