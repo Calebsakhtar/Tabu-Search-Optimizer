@@ -20,28 +20,27 @@ namespace TS
 
 		m_sample_vars = sample_vars;
 
-		// Make a tally vector and reserve the size of the 
-		std::vector<std::vector<size_t>> tally;
-		tally.reserve(m_sample_vars.size());
+		// Make a tally vector and reserve the size of the sample variable vector
+		std::vector<std::vector<size_t>> tally(m_sample_vars.size());
 
 		// Iterate for each variable
 		for (size_t i = 0; i < m_sample_vars.size(); i++) {
 			// Get the feasible regions for the current
 			std::vector<std::array<double, 2>> current_feas_regs = m_sample_vars[i].get_feas_regs();
 			
-			// Make the tally for the current variable
-			std::vector<size_t> current_var_tally;
+			// Store the size of the current variable tally
+			size_t n = 0;
 
 			// If there are less than 2 feasible regions, split the design space into 2
 			if (current_feas_regs.size() < 2) {
-				current_var_tally.reserve(2);
+				n = 2;
 			}
 			else {
-				current_var_tally.reserve(current_feas_regs.size());
+				n = current_feas_regs.size();
 			}
-
-			// Initialise the tally at 0
-			std::fill(current_var_tally.begin(), current_var_tally.end(), 0);
+			
+			// Make the tally for the current variable
+			std::vector<size_t> current_var_tally(n,0);
 
 			// Save to the overall tally
 			tally[i] = current_var_tally;
