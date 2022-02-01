@@ -110,6 +110,9 @@ namespace TS {
 			// Initialise move_on
 			bool move_on = false;
 
+			// Initialise whether a dominant point has been found
+			bool dominant_found = false;
+
 			// Loop to figure out the best generated point
 			while (!move_on) {
 
@@ -169,7 +172,7 @@ namespace TS {
 				}
 
 				// Bool to move on
-				bool move_on = false;
+				move_on = false;
 
 				// Check if any design dominates the current design
 				for (size_t i = 0; i < dominant_configs.size(); i++) {
@@ -179,6 +182,12 @@ namespace TS {
 						// We have found the new point
 						move_on = true;
 						next_config = dominant_configs[i];
+
+						// This new point is dominant
+						dominant_found = true;
+
+						// No need to check any other points
+						break;
 					}
 				}
 
@@ -209,6 +218,29 @@ namespace TS {
 			}
 
 			// Attempt a pattern move
+			if (dominant_found) {
+				next_config = current_config;
+
+				// Perform the same move as the previous move
+				next_config.change_var(prev_idx, prev_increase);
+
+				// Check whether this move dominates the current point
+				if (MDR::A_dominates_B_MDR(next_config.get_performances(),
+					current_config.get_performances(), m_dom_rels)) {
+
+					// Update the current point
+					current_config = next_config;
+
+					// Update the move data
+					current_config.get_prev_move_data(prev_increase, prev_idx);
+
+					// Add the current point to the MTM and to the STM
+					m_MTM.consider_config(current_config);
+					m_STM.add_to_STM(current_config);
+				}
+			}
+
+
 
 		}
 	
