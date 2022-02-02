@@ -170,7 +170,7 @@ namespace TS {
 					Config candidate_config = HJ_configs[i];
 
 					// Erase the config from the new HJ config_vector
-					HJ_configs_new.erase(HJ_configs_new.begin() + i);
+					HJ_configs_new.erase(HJ_configs_new.begin());
 
 					// Compute the objective function (result stored in candidate_point)
 					AircraftEval::compute_f(candidate_config);
