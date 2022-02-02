@@ -72,6 +72,7 @@ namespace TS {
 		// Main loop begin (stop when either the minimum size is reached or the
 		// maximum iteration number is reached)
 		while (!current_config.min_size_reached() && (m_f_eval_num < m_f_eval_num_max)) {
+			
 			// Increase the iteration number
 			m_iter_num++;
 			
@@ -145,7 +146,7 @@ namespace TS {
 				}
 
 				// Move to the next iteration
-				break;
+				continue;
 			}
 
 
