@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <random>
 
 #include "Config.h"
 #include "../../MDR-Test/MDR Test Project/headers/DesignClasses.h"
@@ -28,14 +29,24 @@ namespace TS {
 		// Get a list of the performances
 		std::vector<MDR::Design> get_perf_vect() const;
 
+		// Return the current configuration vector
+		std::vector<Config> get_configs() const { return m_configs; };
+
 		// Set the performances from an input vector of performances
 		void set_perf_vect(const std::vector<MDR::Design>& ip_vect);
 
 		// Replace the oldest configuration of the ParetoMemory with the new point visited
 		bool consider_config(const Config& new_config);
 
+		// Replace the oldest configuration of the ParetoMemory with the new point visited
+		// (using MDR)
+		bool consider_config_MDR(const Config& new_config);
+
 		// Add a new configuration to the pareto memory and update the ranks of every config
 		void add_config_update_ranks(const Config& new_config);
+
+		// Perform an intesnification move (TO BE USED IN THE IM)
+		void intensify(Config& config_to_change, std::default_random_engine& generator);
 
 		// Overload the index operator
 		Config operator [](int i) const { return m_configs[i]; };

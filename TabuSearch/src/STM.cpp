@@ -20,6 +20,7 @@ namespace TS {
 	// Verify whether a certain variable is in the STM
 	bool STM::in_STM(const Config& candidate_config) const {
 
+		// For each of the configurations in the STM
 		for (size_t i = 0; i < m_configs.size(); i++) {
 
 			// Initialize the bool to be returned. Initial assumption is true
@@ -29,7 +30,7 @@ namespace TS {
 			Config current_config_STM = m_configs[i];
 
 			// Check each variable in this configuration
-			for (size_t j = 1; j < candidate_config.size_vars(); j++) {
+			for (size_t j = 0; j < candidate_config.size_vars(); j++) {
 				Variable current_var_STM = current_config_STM[j];
 				Variable current_var_candidate = candidate_config[j];
 
@@ -44,6 +45,9 @@ namespace TS {
 			// (no need to check the other configurations)
 			if (is_in_STM == true) {
 				return true;
+			}
+			else {
+				break;
 			}
 		}
 

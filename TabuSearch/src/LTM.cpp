@@ -20,28 +20,27 @@ namespace TS
 
 		m_sample_vars = sample_vars;
 
-		// Make a tally vector and reserve the size of the 
-		std::vector<std::vector<size_t>> tally;
-		tally.reserve(m_sample_vars.size());
+		// Make a tally vector and reserve the size of the sample variable vector
+		std::vector<std::vector<size_t>> tally(m_sample_vars.size());
 
 		// Iterate for each variable
 		for (size_t i = 0; i < m_sample_vars.size(); i++) {
 			// Get the feasible regions for the current
 			std::vector<std::array<double, 2>> current_feas_regs = m_sample_vars[i].get_feas_regs();
 			
-			// Make the tally for the current variable
-			std::vector<size_t> current_var_tally;
+			// Store the size of the current variable tally
+			size_t n = 0;
 
 			// If there are less than 2 feasible regions, split the design space into 2
 			if (current_feas_regs.size() < 2) {
-				current_var_tally.reserve(2);
+				n = 2;
 			}
 			else {
-				current_var_tally.reserve(current_feas_regs.size());
+				n = current_feas_regs.size();
 			}
-
-			// Initialise the tally at 0
-			std::fill(current_var_tally.begin(), current_var_tally.end(), 0);
+			
+			// Make the tally for the current variable
+			std::vector<size_t> current_var_tally(n,0);
 
 			// Save to the overall tally
 			tally[i] = current_var_tally;
@@ -87,7 +86,7 @@ namespace TS
 
 	// Choose a random within the least visited region so far.
 	// The generator input is for the randomness aspect.
-	Config LTM::diversify(std::default_random_engine& generator) const {
+	void LTM::diversify(Config& ip_config, std::default_random_engine& generator) const {
 		
 		// Use the sample variables as a base to make a new config
 		std::vector<Variable> result_vars = m_sample_vars;
@@ -127,17 +126,22 @@ namespace TS
 			}
 
 			// Generate the value for the current variable 
-			std::uniform_real_distribution<double> distribution(range_start, range_end);
-			double gen_number = distribution(generator);
+			double gen_number = 0;
 
 			// Account for discrete variables
 			if (current_var.get_discrete()) {
-				// If the variable is discrete, floor it to make it discrete
-				current_var.set_val(floor(gen_number));
+				int range_start_int = static_cast<int>(floor(range_start));
+				int range_end_int = static_cast<int>(ceil(range_end));
+				std::uniform_int_distribution<> distribution(range_start_int, range_end_int);
+				gen_number = static_cast<double>(distribution(generator));
 			}
 			else {
-				current_var.set_val(gen_number);
+				// Generate the value for the current variable 
+				std::uniform_real_distribution<double> distribution(range_start, range_end);
+				gen_number = distribution(generator);
 			}
+
+			current_var.set_val(gen_number);
 
 			result_vars[i] = current_var;
 		}
@@ -145,7 +149,9 @@ namespace TS
 		// Make a new config to return
 		Config result_config(result_vars);
 
-		return result_config;
+		result_config.copy_stepsizes(ip_config);
+
+		ip_config = result_config;
 	};
 
 }

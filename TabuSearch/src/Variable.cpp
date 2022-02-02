@@ -40,7 +40,6 @@ namespace TS {
 	// Check whether two variables are the relative to the step size of the next variable
 	bool Variable::same_variable_step(const Variable& other) const {
 
-		// Keep a tally of how many things are the same
 		bool same = true;
 
 		// Get the step size of the input variable

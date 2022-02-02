@@ -62,6 +62,32 @@ namespace TS {
 		return true;
 	}
 
+	// Replace the oldest configurationw of the ParetoMemory with the new point visited if this
+// new point dominates the configurations
+	bool ParetoMemory::consider_config_MDR(const Config& new_config) {
+
+		for (size_t i = 0; i < m_configs.size(); i++) {
+			Config current_config = m_configs[i];
+			MDR::Design current_design = current_config.get_performances();
+			MDR::Design ip_design = new_config.get_performances();
+
+			// Check that no members of the ParetoMemory dominate the new config
+			if (MDR::A_dominates_B_MDR(current_design, ip_design, m_dom_rels)) {
+				return false;
+			}
+			else if (MDR::A_dominates_B_MDR(ip_design, current_design, m_dom_rels)) {
+				// If the input dominates any of the existing designs, remove the existing design
+				m_configs.erase(m_configs.begin() + i);
+			}
+		}
+
+		// Add the candidate design to the ParetoMemory
+		m_configs.push_back(new_config);
+
+		// The candidate configuration has been added to the object, so return true
+		return true;
+	}
+
 	void ParetoMemory::add_config_update_ranks(const Config& new_config) {
 		
 		// Get the relevant design performances
@@ -73,6 +99,25 @@ namespace TS {
 
 		// Add the new design to the existing designs and update the ParetoMemory
 		existing_designs.push_back(new_design);
+
+		m_configs.push_back(new_config);
 		set_perf_vect(existing_designs);
-	};
+	}
+
+	// Perform an intesnification move (TO BE USED IN THE IM)
+	void ParetoMemory::intensify(Config& config_to_change, std::default_random_engine& generator) {
+		
+		// Shuffle the points vector
+		std::shuffle(m_configs.begin(), m_configs.end(), generator);
+
+		// Get the chosen config
+		Config chosen_config = m_configs[0];
+
+		// Copy the step sizes
+		chosen_config.copy_stepsizes(config_to_change);
+
+		// Change the input
+		config_to_change = chosen_config;
+		
+	}
 }
