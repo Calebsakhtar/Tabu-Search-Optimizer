@@ -22,7 +22,7 @@ namespace TS {
 		std::default_random_engine m_generator; // Stores the RN Generator
 		size_t m_f_eval_num = 0; // Stores the number of times the objective function is called
 		size_t m_iter_num = 0; // Stores the iteration number
-		size_t m_f_eval_num_max = 1e100; // Stores the maximum iteration number
+		size_t m_f_eval_num_max = 1e10; // Stores the maximum iteration number
 		size_t m_HJ_num = 8; // Stores the maximum number of H&J points considered
 		double m_reduction_factor = 0.5; // Stores the minimum reduction factor
 

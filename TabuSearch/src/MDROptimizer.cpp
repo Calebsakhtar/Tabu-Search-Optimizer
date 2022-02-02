@@ -121,7 +121,7 @@ namespace TS {
 
 			// If all new points are either Tabu or Unfeasible, diversify and reduce if necessary
 			if (HJ_configs.size() < 1) {
-				current_config = m_LTM.diversify(m_generator);
+				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);
@@ -308,7 +308,7 @@ namespace TS {
 
 			// Intensify, Diversify or Reduce as appropriate
 			if (m_counter == m_INTENSIFY){ 
-				current_config = m_IM.intensify(m_generator);
+				m_IM.intensify(current_config, m_generator);
 
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);
@@ -325,7 +325,7 @@ namespace TS {
 			
 			}
 			else if (m_counter == m_DIVERSIFY) {
-				current_config = m_LTM.diversify(m_generator);
+				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
 				AircraftEval::compute_f(current_config);

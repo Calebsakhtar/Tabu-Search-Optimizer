@@ -86,7 +86,7 @@ namespace TS
 
 	// Choose a random within the least visited region so far.
 	// The generator input is for the randomness aspect.
-	Config LTM::diversify(std::default_random_engine& generator) const {
+	void LTM::diversify(Config& ip_config, std::default_random_engine& generator) const {
 		
 		// Use the sample variables as a base to make a new config
 		std::vector<Variable> result_vars = m_sample_vars;
@@ -149,7 +149,9 @@ namespace TS
 		// Make a new config to return
 		Config result_config(result_vars);
 
-		return result_config;
+		result_config.copy_stepsizes(ip_config);
+
+		ip_config = result_config;
 	};
 
 }

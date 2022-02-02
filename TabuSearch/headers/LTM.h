@@ -24,7 +24,7 @@ namespace TS {
 		void update_tally(const Config& new_pt);
 
 		// Choose a random within the least visited region so far
-		Config diversify(std::default_random_engine& generator) const;
+		void diversify(Config& ip_config, std::default_random_engine& generator) const;
 	};
 }
 
