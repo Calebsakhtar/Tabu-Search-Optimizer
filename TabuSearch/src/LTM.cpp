@@ -130,8 +130,8 @@ namespace TS
 
 			// Account for discrete variables
 			if (current_var.get_discrete()) {
-				int range_start_int = floor(range_start);
-				int range_end_int = ceil(range_end);
+				int range_start_int = static_cast<int>(floor(range_start));
+				int range_end_int = static_cast<int>(ceil(range_end));
 				std::uniform_int_distribution<> distribution(range_start_int, range_end_int);
 				gen_number = static_cast<double>(distribution(generator));
 			}
