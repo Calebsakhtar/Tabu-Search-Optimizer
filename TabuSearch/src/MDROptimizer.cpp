@@ -263,28 +263,32 @@ namespace TS {
 				// Perform the same move as the previous move
 				next_config.change_var(prev_idx, prev_increase);
 
-				// Compute the objective function (result stored in candidate_point)
-				AircraftEval::compute_f(next_config);
-				m_f_eval_num++;
-				next_config.initialize_ranks(m_dom_rels);
+				// Check whether this move is feasible and not tabu
+				if (next_config.is_feasible() && !m_STM.in_STM(next_config)) {
 
-				// Check whether this move dominates the current point
-				if (MDR::A_dominates_B_MDR(next_config.get_performances(),
-					current_config.get_performances(), m_dom_rels)) {
+					// Compute the objective function (result stored in candidate_point)
+					AircraftEval::compute_f(next_config);
+					m_f_eval_num++;
+					next_config.initialize_ranks(m_dom_rels);
 
-					// Update the current point
-					current_config = next_config;
+					// Check whether this move dominates the current point
+					if (MDR::A_dominates_B_MDR(next_config.get_performances(),
+						current_config.get_performances(), m_dom_rels)) {
 
-					// Update the move data
-					current_config.get_prev_move_data(prev_increase, prev_idx);
+						// Update the current point
+						current_config = next_config;
 
-					// Add the current point to the MTM, STM and LTM
-					new_MTM_config = new_MTM_config || m_MTM.consider_config(current_config);
-					m_STM.add_to_STM(current_config);
-					m_LTM.update_tally(current_config);
+						// Update the move data
+						current_config.get_prev_move_data(prev_increase, prev_idx);
 
-					// Add the canidate points to the All Point Memory (APM) and update its rank
-					m_APM.add_config_update_ranks(current_config);
+						// Add the current point to the MTM, STM and LTM
+						new_MTM_config = new_MTM_config || m_MTM.consider_config(current_config);
+						m_STM.add_to_STM(current_config);
+						m_LTM.update_tally(current_config);
+
+						// Add the canidate points to the All Point Memory (APM) and update its rank
+						m_APM.add_config_update_ranks(current_config);
+					}
 				}
 			}
 
