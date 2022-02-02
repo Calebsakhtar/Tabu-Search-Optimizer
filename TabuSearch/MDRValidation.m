@@ -37,7 +37,7 @@ hold off
 xlabel('Objective 1','interpreter','latex');
 ylabel('Objective 2');
 
-leg = legend('location','north','orientation','horizontal');
+leg = legend('location','northoutside','orientation','horizontal');
 
 % set fonts and frame:
 set(gca,'Fontn','Times','FontSize',18,'linewidth',1)

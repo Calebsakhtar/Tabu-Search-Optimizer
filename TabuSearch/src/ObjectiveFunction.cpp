@@ -20,7 +20,7 @@ namespace AircraftEval {
 		for (size_t i = 0; i < variables.size(); i++) {
 			double var_val = variables[i].get_val();
 			obj_A += (var_val - 4) * var_val + 3;
-			obj_B += 5 - var_val;
+			obj_B += 3*sin(var_val*10);//+= 5 - var_val;
 		}
 
 		// Formally Store Performance Metric A
@@ -29,7 +29,7 @@ namespace AircraftEval {
 
 		// Formally Store Performance Metric B
 		MDR::MetricID idB("Metric B", 1);
-		MDR::PerfMetric perfB(idB, obj_B, true);
+		MDR::PerfMetric perfB(idB, obj_B/3, true);
 
 		// Put them in a vector
 		std::vector<MDR::PerfMetric> perf_vect = { perfA, perfB };
