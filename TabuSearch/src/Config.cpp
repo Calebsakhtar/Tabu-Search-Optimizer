@@ -64,6 +64,20 @@ namespace TS {
 		}
 	}
 
+	// Copy the stepsized from another configuration
+	void Config::copy_stepsizes(const Config& ip_config) {
+		
+		// Retrieve the input variables and check the input
+		const std::vector<Variable> ip_vars = ip_config.get_vars();
+		assert(ip_vars.size() == m_vars.size());
+
+		// Ensure that the variables are the same and set the steps
+		for (size_t i = 0; i < m_vars.size(); i++) {
+			assert(ip_vars[i].get_name() == m_vars[i].get_name());
+			m_vars[i].set_step(ip_vars[i].get_step());
+		}
+	}
+
 	// Set the previous move data
 	void Config::get_prev_move_data(bool& increasing, size_t& move_idx) const {
 		increasing = m_prev_move_increasing;

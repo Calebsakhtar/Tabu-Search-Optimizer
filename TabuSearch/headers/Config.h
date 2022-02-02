@@ -50,6 +50,9 @@ namespace TS {
 		// Perform a reduction move
 		void reduce(const double& reduction_factor);
 
+		// Copy the stepsized from another configuration
+		void copy_stepsizes(const Config& ip_config);
+
 		// Get the performance metrics
 		MDR::Design get_performances() const { return m_performances; };
 
