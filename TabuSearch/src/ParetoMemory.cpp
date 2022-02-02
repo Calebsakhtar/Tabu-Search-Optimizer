@@ -105,12 +105,19 @@ namespace TS {
 	}
 
 	// Perform an intesnification move (TO BE USED IN THE IM)
-	Config ParetoMemory::intensify(std::default_random_engine& generator) {
+	void ParetoMemory::intensify(Config& config_to_change, std::default_random_engine& generator) {
 		
 		// Shuffle the points vector
 		std::shuffle(m_configs.begin(), m_configs.end(), generator);
 
-		// Return the chosen config
-		return m_configs[0];
+		// Get the chosen config
+		Config chosen_config = m_configs[0];
+
+		// Copy the step sizes
+		chosen_config.copy_stepsizes(config_to_change);
+
+		// Change the input
+		config_to_change = chosen_config;
+		
 	}
 }
