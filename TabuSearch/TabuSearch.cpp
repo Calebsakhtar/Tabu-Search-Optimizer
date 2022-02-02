@@ -84,6 +84,9 @@ int main()
 
     Optimizer.perform_optimization();
 
+    auto result_MTM = Optimizer.retreive_MTM();
+    auto all_pts = Optimizer.retrieve_all_pts();
+
     // Finish the test
     std::cout << "Hello World!\n";
 
