@@ -86,65 +86,66 @@ namespace TS
 
 	// Choose a random within the least visited region so far.
 	// The generator input is for the randomness aspect.
-	void LTM::diversify(Config& ip_config, std::default_random_engine& generator) const {
+	void LTM::diversify(Config& ip_config, std::default_random_engine& generator){
 		
-		// Use the sample variables as a base to make a new config
-		std::vector<Variable> result_vars = m_sample_vars;
+		// Use the input variables as a base to make a new config
+		std::vector<Variable> result_vars = ip_config.get_vars();
+
+		// Increase the index and use the modulo operator to make indexing circular
+		m_last_var_idx = (m_last_var_idx + 1) % m_sample_vars.size();
 		
-		// For every variable
-		for (size_t i = 0; i < result_vars.size(); i++) {
+		size_t i = m_last_var_idx;
 
-			// Recover the current variable and its feasible regions
-			Variable current_var = result_vars[i];
-			const auto current_var_frs = current_var.get_feas_regs();
+		// Recover the current variable and its feasible regions
+		Variable current_var = result_vars[i];
+		const auto current_var_frs = current_var.get_feas_regs();
 
-			// Recover the index of the region with the minimum element
-			std::vector<size_t> fr_tallies = m_tally[i];
-			const auto min_iterator = std::min_element(fr_tallies.begin(), fr_tallies.end());
-			size_t min_idx = std::distance(fr_tallies.begin(), min_iterator);
+		// Recover the index of the region with the minimum element
+		std::vector<size_t> fr_tallies = m_tally[i];
+		const auto min_iterator = std::min_element(fr_tallies.begin(), fr_tallies.end());
+		size_t min_idx = std::distance(fr_tallies.begin(), min_iterator);
 
-			// Initialize the ranges for the uniform distribution to generate the new config
-			double range_start = 0;
-			double range_end = 0;
+		// Initialize the ranges for the uniform distribution to generate the new config
+		double range_start = 0;
+		double range_end = 0;
 
-			if (current_var_frs.size() < 2) {
-				// If there is only one feasible region, the space is divided into two
-				if (min_idx == 0) {
-					range_start = current_var_frs[0][0];
-					range_end = (current_var_frs[0][1] + current_var_frs[0][0]) / 2;
-				}
-				else {
-					range_start = (current_var_frs[0][1] + current_var_frs[0][0]) / 2;
-					range_end = current_var_frs[0][1];
-				}
+		if (current_var_frs.size() < 2) {
+			// If there is only one feasible region, the space is divided into two
+			if (min_idx == 0) {
+				range_start = current_var_frs[0][0];
+				range_end = (current_var_frs[0][1] + current_var_frs[0][0]) / 2;
 			}
 			else {
-				// Otherwise, treat the feasible regions as normal
-				auto current_fr = current_var_frs[min_idx];
-				range_start = current_fr[0];
-				range_end = current_fr[1];
+				range_start = (current_var_frs[0][1] + current_var_frs[0][0]) / 2;
+				range_end = current_var_frs[0][1];
 			}
-
-			// Generate the value for the current variable 
-			double gen_number = 0;
-
-			// Account for discrete variables
-			if (current_var.get_discrete()) {
-				int range_start_int = static_cast<int>(floor(range_start));
-				int range_end_int = static_cast<int>(ceil(range_end));
-				std::uniform_int_distribution<> distribution(range_start_int, range_end_int);
-				gen_number = static_cast<double>(distribution(generator));
-			}
-			else {
-				// Generate the value for the current variable 
-				std::uniform_real_distribution<double> distribution(range_start, range_end);
-				gen_number = distribution(generator);
-			}
-
-			current_var.set_val(gen_number);
-
-			result_vars[i] = current_var;
 		}
+		else {
+			// Otherwise, treat the feasible regions as normal
+			auto current_fr = current_var_frs[min_idx];
+			range_start = current_fr[0];
+			range_end = current_fr[1];
+		}
+
+		// Generate the value for the current variable 
+		double gen_number = 0;
+
+		// Account for discrete variables
+		if (current_var.get_discrete()) {
+			int range_start_int = static_cast<int>(floor(range_start));
+			int range_end_int = static_cast<int>(ceil(range_end));
+			std::uniform_int_distribution<> distribution(range_start_int, range_end_int);
+			gen_number = static_cast<double>(distribution(generator));
+		}
+		else {
+			// Generate the value for the current variable 
+			std::uniform_real_distribution<double> distribution(range_start, range_end);
+			gen_number = distribution(generator);
+		}
+
+		current_var.set_val(gen_number);
+
+		result_vars[i] = current_var;
 
 		// Make a new config to return
 		Config result_config(result_vars);
