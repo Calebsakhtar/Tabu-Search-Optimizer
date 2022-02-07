@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <fstream>
 
 #include "Variable.h"
 #include "Config.h"
@@ -39,6 +40,9 @@ namespace TS {
 		ParetoMemory m_APM; // All-Point Memory
 		LTM m_LTM; // Long-Term Memory
 
+		// Store whether the optimization has run or not
+		bool m_optimized = false;
+
 	public:
 		// Default constructor (constructs an empty object)
 		MDROptimizer() {};
@@ -60,6 +64,16 @@ namespace TS {
 
 		// Retrieve all visited points
 		std::vector<Config> retrieve_all_pts() const { return m_APM.get_configs(); };
+
+		// Print the coordinates of all visited points
+		bool print_visited_pts_coords() const;
+
+		// Print the performances of all visited points
+		bool print_visited_pts() const;
+
+		// Print the performances of all pareto front points
+		bool print_pareto_front() const;
+
 	};
 
 

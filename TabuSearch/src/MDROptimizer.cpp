@@ -347,8 +347,178 @@ namespace TS {
 			}
 
 		}
+		
+		// When the optimization has finished, save the state
+		m_optimized = true;
+	}
 
-	
+	// Print the coordinates of all visited points
+	bool MDROptimizer::print_visited_pts_coords() const {
+
+		if (m_optimized) {
+			// Retrieve all visited points
+			std::vector<TS::Config> all_pts = retrieve_all_pts();
+
+			// Create and open a text file to store the Coordinates of all the Visited Points
+			std::ofstream OpFile("PointCoords.csv");
+
+			if (all_pts.size() > 0) {
+
+				auto vars_size =
+					all_pts[0].get_vars().size();
+
+				OpFile << "PointID";
+
+				for (size_t i = 0; i < vars_size; i++) {
+					OpFile << ",Variable" << std::to_string(i + 1);
+				}
+
+				OpFile << "\n";
+
+				for (size_t i = 0; i < all_pts.size(); i++) {
+					std::vector<TS::Variable> current_vars =
+						all_pts[i].get_vars();
+
+					OpFile << std::to_string(i + 1) << ",";
+
+					for (size_t j = 0; j < current_vars.size() - 1; j++) {
+						OpFile << std::to_string(current_vars[j].get_val()) << ",";
+					}
+
+					OpFile << std::to_string(current_vars[current_vars.size() - 1].get_val()) << "\n";
+				}
+			}
+			else {
+				// Close the file
+				OpFile.close();
+
+				// Return false if the operation failed
+				return false;
+			}
+
+			// Close the file
+			OpFile.close();
+
+			// Return true (the operation was successful)
+			return true;
+		}
+		else {
+			// Return false if the optimization was not already performed
+			return false;
+		}
+	}
+
+	// Print the performances of all visited points
+	bool MDROptimizer::print_visited_pts() const {
+
+		if (m_optimized) {
+			// Retrieve all visited points
+			std::vector<TS::Config> all_pts = retrieve_all_pts();
+
+			// Create and open a text file to store the performances of all the Visited Points
+			std::ofstream OpFile("AllPoints.csv");
+
+			if (all_pts.size() > 0) {
+
+				size_t perf_size2 =
+					all_pts[0].get_performances().get_perf_vector().size();
+
+				OpFile << "PointID";
+
+				for (size_t i = 0; i < perf_size2; i++) {
+					OpFile << ",Objective" << std::to_string(i + 1);
+				}
+
+				OpFile << "\n";
+
+				for (size_t i = 0; i < all_pts.size(); i++) {
+					std::vector<MDR::PerfMetric> current_perfs2 =
+						all_pts[i].get_performances().get_perf_vector();
+
+					OpFile << std::to_string(i + 1) << ",";
+
+					for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
+						OpFile << std::to_string(current_perfs2[j].get_metric_val()) << ",";
+					}
+
+					OpFile << std::to_string(current_perfs2[current_perfs2.size() - 1].get_metric_val()) << "\n";
+				}
+			}
+			else {
+				// Close the file
+				OpFile.close();
+
+				// Return false if the operation failed
+				return false;
+			}
+
+			// Close the file
+			OpFile.close();
+
+
+			// Return true (the operation was successful)
+			return true;
+		}
+		else {
+			// Return false if the optimization was not already performed
+			return false;
+		}
+	}
+
+	// Print the performances of all pareto front points
+	bool MDROptimizer::print_pareto_front() const {
+
+		if (m_optimized) {
+			// Recover the pareto front
+			std::vector<TS::Config> result_MTM = retreive_MTM();
+
+			// Create and open a text file to store the ParetoFront in
+			std::ofstream OpFile("ParetoPoints.csv");
+
+			if (result_MTM.size() > 0) {
+
+				size_t perf_size =
+					result_MTM[0].get_performances().get_perf_vector().size();
+
+				OpFile << "MTMID";
+
+				for (size_t i = 0; i < perf_size; i++) {
+					OpFile << ",Objective" << std::to_string(i + 1);
+				}
+
+				OpFile << "\n";
+
+				for (size_t i = 0; i < result_MTM.size(); i++) {
+					std::vector<MDR::PerfMetric> current_perfs =
+						result_MTM[i].get_performances().get_perf_vector();
+
+					OpFile << std::to_string(i + 1) << ",";
+
+					for (size_t j = 0; j < current_perfs.size() - 1; j++) {
+						OpFile << std::to_string(current_perfs[j].get_metric_val()) << ",";
+					}
+
+					OpFile << std::to_string(current_perfs[current_perfs.size() - 1].get_metric_val()) << "\n";
+				}
+			}
+			else {
+				// Close the file
+				OpFile.close();
+
+				// Return false if the operation failed
+				return false;
+			}
+
+			// Close the file
+			OpFile.close();
+
+			// Return true (the operation was successful)
+			return true;
+		}
+		else {
+			// Return false if the optimization was not already performed
+			return false;
+		}
 	}
 
 }

@@ -8,7 +8,7 @@ cal_grey_light = [0.95 0.95 0.95];
 cal_grey_dark = [0.35 0.35 0.35];
 
 allpoints = readtable('AllPoints.csv');
-pareto = readtable('Points.csv');
+pareto = readtable('ParetoPoints.csv');
 coords = readtable('PointCoords.csv');
 
 var1 = table2array(coords(:,2))';
