@@ -153,8 +153,10 @@
   <ItemGroup>
     <ClInclude Include="..\MDR-Test\MDR Test Project\headers\DesignClasses.h" />
     <ClInclude Include="..\MDR-Test\MDR Test Project\headers\MDRFunctions.h" />
+    <ClInclude Include="..\MDR-Test\MDR Test Project\headers\ReadDesigns.h" />
     <ClInclude Include="headers\Config.h" />
     <ClInclude Include="headers\LTM.h" />
+    <ClInclude Include="headers\MDR-TS.h" />
     <ClInclude Include="headers\MDROptimizer.h" />
     <ClInclude Include="headers\ObjectiveFunction.h" />
     <ClInclude Include="headers\ParetoMemory.h" />

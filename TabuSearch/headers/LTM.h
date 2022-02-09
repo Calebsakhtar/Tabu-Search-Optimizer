@@ -13,6 +13,8 @@ namespace TS {
 	class LTM {
 		std::vector<Variable> m_sample_vars; // Stores the ranges of feasible region
 		std::vector<std::vector<size_t>> m_tally; // Stores the tally of the LTM
+		size_t m_last_var_idx = 0; // Stores the index of the last variable changed
+
 	public:
 		// Default constructor (constructs an empty object)
 		LTM() {};
@@ -24,7 +26,7 @@ namespace TS {
 		void update_tally(const Config& new_pt);
 
 		// Choose a random within the least visited region so far
-		void diversify(Config& ip_config, std::default_random_engine& generator) const;
+		void diversify(Config& ip_config, std::default_random_engine& generator);
 	};
 }
 

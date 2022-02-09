@@ -68,15 +68,18 @@ int main()
     size_t INTENSIFY = 10;
     size_t DIVERSIFY = 15;
     size_t REDUCE = 25;
-    size_t max_eval_num = 1000;
+    size_t max_eval_num = 2000;
     size_t HJ_num = 8;
 
     // Initialize the variables and the vector containing them
-    std::array<double, 2> feas_reg_low = { 0., 0.45 };
-    std::array<double, 2> feas_reg_high = { 0.77, 1. };
-    std::vector<std::array<double, 2>> feas_regs = {feas_reg_low, feas_reg_high};
-    TS::Variable varA(false, feas_regs, 0.05, 0.2, 0.2, "Variable A");
-    TS::Variable varB(false, feas_regs, 0.05, 0.9, 0.2, "Variable B");
+    std::array<double, 2> feas_reg_low1 = { 0., 0.45 };
+    std::array<double, 2> feas_reg_high1 = { 0.77, 1. };
+    std::vector<std::array<double, 2>> feas_regs1 = {feas_reg_low1, feas_reg_high1};
+    std::array<double, 2> feas_reg_a = { 0.4, 0.7 };
+    std::array<double, 2> feas_reg_b = { 0.9, 1. };
+    std::vector<std::array<double, 2>> feas_regs2 = { feas_reg_a, feas_reg_b };
+    TS::Variable varA(false, feas_regs1, 0.02, 0.2, 0.2, "Variable A");
+    TS::Variable varB(false, feas_regs2, 0.02, 0.5, 0.2, "Variable B");
     std::vector<TS::Variable> vars = { varA, varB };
 
     TS::Config initial_point(vars);
@@ -89,72 +92,10 @@ int main()
     auto result_MTM = Optimizer.retreive_MTM();
     auto all_pts = Optimizer.retrieve_all_pts();
 
-    // Create and open a text file to store the ParetoFront in
-    std::ofstream MyFile2("AllPoints.csv");
-
-    if (all_pts.size() > 0) {
-
-        size_t perf_size2 =
-            all_pts[0].get_performances().get_perf_vector().size();
-
-        MyFile2 << "PointID";
-
-        for (size_t i = 0; i < perf_size2; i++) {
-            MyFile2 << ",Objective" << std::to_string(i + 1);
-        }
-
-        MyFile2 << "\n";
-        
-        for (size_t i = 0; i < all_pts.size(); i++) {
-            std::vector<MDR::PerfMetric> current_perfs2 = 
-                all_pts[i].get_performances().get_perf_vector();
-            
-            MyFile2 << std::to_string(i+1) << ",";
-
-            for (size_t j = 0; j < current_perfs2.size()-1; j++) {
-                MyFile2 << std::to_string(current_perfs2[j].get_metric_val()) << ",";
-            }
-
-            MyFile2 << std::to_string(current_perfs2[current_perfs2.size() - 1].get_metric_val()) << "\n";
-        }
-    }
-
-    // Close the file
-    MyFile2.close();
-
-
-    // Create and open a text file to store the ParetoFront in
-    std::ofstream MyFile("Points.csv");
-
-    if (result_MTM.size() > 0) {
-
-        size_t perf_size =
-            result_MTM[0].get_performances().get_perf_vector().size();
-
-        MyFile << "MTMID";
-
-        for (size_t i = 0; i < perf_size; i++) {
-            MyFile << ",Objective" << std::to_string(i + 1);
-        }
-
-        MyFile << "\n";
-
-        for (size_t i = 0; i < result_MTM.size(); i++) {
-            std::vector<MDR::PerfMetric> current_perfs =
-                result_MTM[i].get_performances().get_perf_vector();
-
-            MyFile << std::to_string(i + 1) << ",";
-
-            for (size_t j = 0; j < current_perfs.size() - 1; j++) {
-                MyFile << std::to_string(current_perfs[j].get_metric_val()) << ",";
-            }
-
-            MyFile << std::to_string(current_perfs[current_perfs.size() - 1].get_metric_val()) << "\n";
-        }
-    }
-
-    // Close the file
-    MyFile.close();
+    // Print the relevant quantities for MATLAB Visualization
+    Optimizer.print_pareto_front();
+    Optimizer.print_visited_pts();
+    Optimizer.print_visited_pts_coords();
 
     // Finish the test
     std::cout << "Hello World!\n";
