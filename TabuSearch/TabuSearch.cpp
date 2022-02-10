@@ -8,11 +8,8 @@
 #include <array>
 #include <fstream>
 
-#include "headers/Variable.h"
-#include "headers/Config.h"
-#include "headers/STM.h"
-#include "headers/MDROptimizer.h"
-#include "../MDR-Test/MDR Test Project/headers/ReadDesigns.h"
+#include "headers/MDR-TS.h"
+#include "headers/XPlaneConnect.h"
 
 int main()
 {
