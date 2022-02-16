@@ -84,18 +84,113 @@ int main()
     TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, INTENSIFY,
         DIVERSIFY, REDUCE, max_eval_num, HJ_num);
 
-    Optimizer.perform_optimization();
+    //Optimizer.perform_optimization();
 
-    auto result_MTM = Optimizer.retreive_MTM();
-    auto all_pts = Optimizer.retrieve_all_pts();
+    //auto result_MTM = Optimizer.retreive_MTM();
+    //auto all_pts = Optimizer.retrieve_all_pts();
 
-    // Print the relevant quantities for MATLAB Visualization
-    Optimizer.print_pareto_front();
-    Optimizer.print_visited_pts();
-    Optimizer.print_visited_pts_coords();
+    //// Print the relevant quantities for MATLAB Visualization
+    //Optimizer.print_pareto_front();
+    //Optimizer.print_visited_pts();
+    //Optimizer.print_visited_pts_coords();
 
     // Finish the test
     std::cout << "Hello World!\n";
+
+	printf("XPlaneConnect Example Script\n- Setting up Simulation\n");
+
+	// Open Socket
+	const char* IP = "128.232.250.212";     //IP Address of computer running X-Plane
+	XPCSocket sock = openUDP(IP);
+	float tVal[1];
+	int tSize = 1;
+	if (getDREF(sock, "sim/test/test_float", tVal, &tSize) < 0)
+	{
+		printf("Error establishing connecting. Unable to read data from X-Plane.");
+		return EXIT_FAILURE;
+	}
+
+	// Set Location/Orientation (sendPOSI)
+	// Set Up Position Array
+	double POSI[7] = { 0.0 };
+
+    POSI[0] = 51.875278627882849;
+    POSI[1] = 0.22022808392539564;
+    POSI[2] = 6395.0574894603342;
+    POSI[3] = -1.6440951824188232;
+    POSI[4] = -0.14142291247844696;
+    POSI[5] = 42.833587646484375;
+    POSI[6] = 0.0;
+
+    sendPOSI(sock, POSI, 7, 0);
+
+    const char* speed_dref = "sim/flightmodel/position/local_vx"; // real DREF
+    float speed_val = 143.377; 
+    sendDREF(sock, speed_dref, &speed_val, 1); // Send data
+
+    const char* ap_off_dref = "sim/cockpit/autopilot/autopilot_mode"; // AP Mode
+    float ap_off_val = 0; // off=0, flight director=1, on=2
+    sendDREF(sock, ap_off_dref, &ap_off_val, 1); // Send data
+
+    const char* ap_state_dref = "sim/cockpit/autopilot/autopilot_state"; // AP State
+
+    // pauseSim
+    pauseSim(sock, 1); // Sending 1 to pause	
+    sleep(5); // Pause for 5 seconds
+
+    const char* ap_mode_dref = "sim/cockpit/autopilot/autopilot_mode"; // AP Mode
+    float ap_mode_val = 2; // off=0, flight director=1, on=2
+    sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
+
+    const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
+    float ap_alt_val = 21000; // in ft above sea level
+    sendDREF(sock, ap_alt_dref, &ap_alt_val, 1); // Send data
+
+    const char* ap_vs_dref = "sim/cockpit/autopilot/vertical_velocity"; // AP Vertical Speed
+    float ap_vs_val = 1000; // in ft/min above sea level
+    sendDREF(sock, ap_vs_dref, &ap_vs_val, 1); // Send data
+
+    const char* ap_hdg_dref = "sim/cockpit/autopilot/heading"; // AP Heading
+    float ap_hdg_val = 43; // in ft/min above sea level
+    sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
+
+    float ap_vnav_val = 131072; // arm vnav
+    sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
+    
+    float ap_hnav_val = 256; // arm hnav
+    sendDREF(sock, ap_state_dref, &ap_hnav_val, 1); // Send data
+
+    float ap_athr_val = 1; // change autothrottle
+    sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
+
+    float ap_hdg2_val = 2; // hdg hold
+    sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
+
+    //float ap_vsset_val = 16; // change vspeed
+    //sendDREF(sock, ap_state_dref, &ap_vsset_val, 1); // Send data
+
+    //float ap_flchange_val = 64; // change flight level
+    //sendDREF(sock, ap_state_dref, &ap_flchange_val, 1); // Send data
+
+
+    //POSI[3] = 180; // Pitch
+    //POSI[4] = 90; // Roll (+ve to the right)
+    //sendPOSI(sock, POSI, 7, 0);
+
+	// pauseSim
+	pauseSim(sock, 1); // Sending 1 to pause	
+	sleep(5); // Pause for 5 seconds
+
+	// Unpause
+	pauseSim(sock, 0); // Sending 0 to unpause
+	printf("- Resuming Simulation\n");
+
+	// Simulate for 10 seconds
+	sleep(10);
+
+	printf("---End Program---\n");
+
+	return 0;
 
 }
 
