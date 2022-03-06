@@ -86,7 +86,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="..\MDR-Test\MDR Test Project\src\DesignClasses.cpp" />
     <ClCompile Include="..\MDR-Test\MDR Test Project\src\MDRFunctions.cpp" />
+    <ClCompile Include="..\XPlaneConnect\C\src\xplaneConnect.c" />
     <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\LTM.cpp" />
     <ClCompile Include="src\MDROptimizer.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="headers\ParetoMemory.h" />
     <ClInclude Include="headers\STM.h" />
     <ClInclude Include="headers\Variable.h" />
+    <ClInclude Include="headers\XPlaneConnect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
