@@ -3,9 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <math.h>
 
 #include "Config.h"
 #include "XPlaneConnect.h"
+#include "../../H2-Aircraft-Model/H2-Aircraft-Model/headers/AircraftModel.h"
+#include "../../H2-Aircraft-Model/H2-Aircraft-Model/headers/MathTools.h"
+#include "../../H2-Aircraft-Model/H2-Aircraft-Model/headers/PlaneMakerTools.h"
 
 namespace AircraftEval {
 
