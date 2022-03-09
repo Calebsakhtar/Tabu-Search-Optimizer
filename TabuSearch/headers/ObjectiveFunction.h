@@ -13,9 +13,12 @@
 
 namespace AircraftEval {
 
+	// Initialize the xplane simulation
+	void init_simulator(XPCSocket sock);
+
 	// Given an input configuration, evaluate its performance and
 	// update the configuration with the performance metrics
-	void compute_f(TS::Config& ip_config);
+	bool compute_f(TS::Config& ip_config);
 }
 
 #endif
