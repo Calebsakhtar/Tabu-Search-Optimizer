@@ -300,6 +300,10 @@ namespace AircraftEval {
             L_D = op_L / op_D;
         }
         
+        const char* reload_dref = "sim/operation/quit";
+        float reload = 1.;
+        sendDREF(sock, reload_dref, &reload, 1); // Send data
+
         // Evaluate and store the performance metrics        
 
         // Initialize the performance metric vector
