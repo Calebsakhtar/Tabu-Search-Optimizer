@@ -100,7 +100,7 @@ int main()
     printf("XPlaneConnect Example Script\n- Setting up Simulation\n");
 
     // Open Socket
-    const char* IP = "128.232.250.212";     //IP Address of computer running X-Plane
+    const char* IP = "192.168.1.150";     //IP Address of computer running X-Plane
     XPCSocket sock = openUDP(IP);
     float tVal[1];
     int tSize = 1;
