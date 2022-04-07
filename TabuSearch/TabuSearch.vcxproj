@@ -139,6 +139,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\H2-Aircraft-Model\H2-Aircraft-Model\src\AircraftModel.cpp" />
+    <ClCompile Include="..\H2-Aircraft-Model\H2-Aircraft-Model\src\MathTools.cpp" />
+    <ClCompile Include="..\H2-Aircraft-Model\H2-Aircraft-Model\src\PlaneMakerTools.cpp" />
     <ClCompile Include="..\MDR-Test\MDR Test Project\src\DesignClasses.cpp" />
     <ClCompile Include="..\MDR-Test\MDR Test Project\src\MDRFunctions.cpp" />
     <ClCompile Include="..\XPlaneConnect\C\src\xplaneConnect.c" />
@@ -152,6 +155,9 @@
     <ClCompile Include="TabuSearch.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\H2-Aircraft-Model\H2-Aircraft-Model\headers\AircraftModel.h" />
+    <ClInclude Include="..\H2-Aircraft-Model\H2-Aircraft-Model\headers\MathTools.h" />
+    <ClInclude Include="..\H2-Aircraft-Model\H2-Aircraft-Model\headers\PlaneMakerTools.h" />
     <ClInclude Include="..\MDR-Test\MDR Test Project\headers\DesignClasses.h" />
     <ClInclude Include="..\MDR-Test\MDR Test Project\headers\MDRFunctions.h" />
     <ClInclude Include="..\MDR-Test\MDR Test Project\headers\ReadDesigns.h" />
