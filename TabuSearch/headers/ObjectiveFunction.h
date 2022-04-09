@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <iostream>
 
 #include "Config.h"
 #include "XPlaneConnect.h"

@@ -3,6 +3,14 @@
 
 namespace AircraftEval {
 
+    void display_aircraft_data(const double& x_CG_nofuel, const double& M_nofuel, 
+        const double& ip_h, const double& ip_TAS, const double& ip_BSFC_full, 
+        const double& ip_BSFC_full_low, const double& P_max, double M_fuel, 
+        const double& H2_M_prop) {
+    
+    }
+
+
 	void init_simulator(XPCSocket sock) {
         // Set Location/Orientation (sendPOSI)
         // Set Up Position Array
@@ -128,7 +136,7 @@ namespace AircraftEval {
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(20); 
+        sleep(25); 
     }
 
     void get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
@@ -236,6 +244,7 @@ namespace AircraftEval {
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
         double mass_JA1 = 0; // kg
+        double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
 
@@ -287,11 +296,14 @@ namespace AircraftEval {
                 break;
             }
 
-
             // Write the load data to the ACF file
             PlaneMakerTools::set_weight_data(x_cg_nofuel, mass_nofuel, acf_filepath);
 
-            // Reset the simulator and let it run for 7 seconds
+            // Write the fuel data to the ACF file
+            H2_mprop = (w_fuel - mass_JA1) / w_fuel;
+            PlaneMakerTools::set_fuel_data(w_fuel, x_H2_tanks, H2_mprop, acf_filepath);
+
+            // Reset the simulator and let it run for a while to achieve steady-state
             reset_sim(sock, ip_h, TAS);
 
             get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
