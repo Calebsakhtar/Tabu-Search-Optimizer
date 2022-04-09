@@ -62,7 +62,7 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        float ap_hdg2_val = 4; // hdg hold
+        float ap_hdg2_val = 4; // wing level hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
 
         // pauseSim
@@ -74,6 +74,10 @@ namespace AircraftEval {
 	}
 
     void reset_sim(XPCSocket sock, const double& ip_h, const double& ip_TAS) {
+        // Resets the simulator (at the appropriate height ip_h and true airspeed ip_TAS).
+        //
+        // Height ip_h is in m
+        // True Airspeed ip_TAS is in m/s
         
         // Convert inputs to float and also convert height to meters
         float height = 1000 * static_cast<float>(ip_h); // m
@@ -85,7 +89,7 @@ namespace AircraftEval {
 
         POSI[0] = 51.875278627882849;
         POSI[1] = 0.22022808392539564;
-        POSI[2] = 1.1 * height; // 10% higher to account for transient
+        POSI[2] = height;
         POSI[3] = -1.6440951824188232;
         POSI[4] = -0.14142291247844696;
         POSI[5] = 42.833587646484375;
@@ -105,6 +109,11 @@ namespace AircraftEval {
         float ap_mode_val = 2; // off=0, flight director=1, on=2
         sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
 
+        const char* ap_airspeed_dref = "sim/cockpit/autopilot/airspeed";
+        double IAS = AircraftModel::TAS_to_IAS(ip_TAS, ip_h / 1000);
+        float ap_airspeed_val = static_cast<float>(IAS); // IAS, m/s
+        sendDREF(sock, ap_airspeed_dref, &ap_airspeed_val, 1); // Send data
+
         // Convert the height to feet
         const float m_to_feet = 3.28084;
         height *= m_to_feet;
@@ -115,9 +124,8 @@ namespace AircraftEval {
         float ap_vs_val = 1000; // in ft/min above sea level
         sendDREF(sock, ap_vs_dref, &ap_vs_val, 1); // Send data
 
-        const char* ap_hdg_dref = "sim/cockpit/autopilot/heading"; // AP Heading
-        float ap_hdg_val = 43; // in ft/min above sea level
-        sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
+        float ap_athr_val = 1; // change autothrottle
+        sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
         sleep(20); 
