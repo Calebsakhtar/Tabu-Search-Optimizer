@@ -9,15 +9,18 @@ namespace TS {
 	// Intended constructor for the Variable class
 	MDROptimizer::MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
 		const Config& initial_config, const double reduction_factor, const unsigned seed,
-		const size_t INTENSIFY, const size_t DIVERSIFY, const size_t REDUCE, 
-		const size_t max_eval_num, const size_t HJ_num) {
+		const XPCSocket sock, const size_t INTENSIFY, const size_t DIVERSIFY,
+		const size_t REDUCE, const size_t max_eval_num, const size_t HJ_num) {
+
+		// Save the XPC Socket
+		m_sock = sock;
 
 		// Save the dominance relations and the initial configuration
 		m_dom_rels = dom_rels;
 		m_initial_config = initial_config;
 
 		// Compute the objective function (result stored in candidate_point)
-		AircraftEval::compute_f(m_initial_config);
+		AircraftEval::compute_f(m_initial_config, m_sock);
 		m_initial_config.initialize_ranks(m_dom_rels);
 		m_f_eval_num = 1;
 
@@ -57,6 +60,9 @@ namespace TS {
 	}
 
 	void MDROptimizer::perform_optimization() {
+
+		// Initialize the Simulation
+		AircraftEval::init_simulator(m_sock);
 
 		// Set the current point and the next as the initial point
 		Config current_config = m_initial_config;
@@ -124,7 +130,7 @@ namespace TS {
 				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config);
+				AircraftEval::compute_f(current_config, m_sock);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
@@ -174,7 +180,7 @@ namespace TS {
 					HJ_configs_new.erase(HJ_configs_new.begin());
 
 					// Compute the objective function (result stored in candidate_point)
-					AircraftEval::compute_f(candidate_config);
+					AircraftEval::compute_f(candidate_config, m_sock);
 					m_f_eval_num++;
 					candidate_config.initialize_ranks(m_dom_rels);
 
@@ -268,7 +274,7 @@ namespace TS {
 				if (next_config.is_feasible() && !m_STM.in_STM(next_config)) {
 
 					// Compute the objective function (result stored in candidate_point)
-					AircraftEval::compute_f(next_config);
+					AircraftEval::compute_f(next_config, m_sock);
 					m_f_eval_num++;
 					next_config.initialize_ranks(m_dom_rels);
 
@@ -311,7 +317,7 @@ namespace TS {
 				m_IM.intensify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config);
+				AircraftEval::compute_f(current_config, m_sock);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
@@ -328,7 +334,7 @@ namespace TS {
 				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config);
+				AircraftEval::compute_f(current_config, m_sock);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
