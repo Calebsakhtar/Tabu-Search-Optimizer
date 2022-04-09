@@ -62,7 +62,7 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        float ap_hdg2_val = 2; // hdg hold
+        float ap_hdg2_val = 4; // hdg hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
 
         // pauseSim
@@ -120,7 +120,7 @@ namespace AircraftEval {
         sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(30); 
+        sleep(20); 
     }
 
     void get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
