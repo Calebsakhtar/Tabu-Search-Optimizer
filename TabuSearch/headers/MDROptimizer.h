@@ -40,6 +40,9 @@ namespace TS {
 		ParetoMemory m_APM; // All-Point Memory
 		LTM m_LTM; // Long-Term Memory
 
+		// Store the XPC Socket
+		XPCSocket m_sock;
+
 		// Store whether the optimization has run or not
 		bool m_optimized = false;
 
@@ -50,8 +53,8 @@ namespace TS {
 		// Intended constructor
 		MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
 			const Config& initial_config, const double reduction_factor, const unsigned seed, 
-			const size_t INTENSIFY = 10, const size_t DIVERSIFY = 15, const size_t REDUCE = 25, 
-			const size_t max_eval_num = 1e100, const size_t HJ_num = 8);
+			const XPCSocket sock, const size_t INTENSIFY = 10, const size_t DIVERSIFY = 15, 
+			const size_t REDUCE = 25, const size_t max_eval_num = 1e100, const size_t HJ_num = 8);
 
 		// Copy constructor (Currently Disabled)
 		//Optimizer(const Optimizer& ip_var) {};

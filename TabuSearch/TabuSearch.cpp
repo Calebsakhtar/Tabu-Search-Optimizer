@@ -92,15 +92,11 @@ int main()
     size_t max_eval_num = 20000;
     size_t HJ_num = 8;
 
-    // Instantiate the Optimizer object
-    TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, INTENSIFY,
-        DIVERSIFY, REDUCE, max_eval_num, HJ_num);
-
     // Set up the simulation
-    printf("XPlaneConnect Example Script\n- Setting up Simulation\n");
+    printf("Setting up Simulation\n");
 
     // Open Socket
-    const char* IP = "128.232.250.212";     //IP Address of computer running X-Plane
+    const char* IP = "192.168.1.150";     //IP Address of computer running X-Plane
     XPCSocket sock = openUDP(IP);
     float tVal[1];
     int tSize = 1;
@@ -109,8 +105,13 @@ int main()
         printf("Error establishing connecting. Unable to read data from X-Plane.");
         return EXIT_FAILURE;
     }
+    else {
+        printf("Initial connection successful.\n");
+    }
 
-    AircraftEval::init_simulator(sock);
+    // Instantiate the Optimizer object
+    TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, sock, INTENSIFY,
+        DIVERSIFY, REDUCE, max_eval_num, HJ_num);
 
     // Perform the optimization and store the results
     Optimizer.perform_optimization();

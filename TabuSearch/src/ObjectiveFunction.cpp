@@ -156,7 +156,7 @@ namespace AircraftEval {
 
     // Given an input configuration, evaluate its performance and
     // update the configuration with the performance metrics
-    bool compute_f(TS::Config& ip_config) {
+    bool compute_f(TS::Config& ip_config, const XPCSocket sock) {
 
         //// THIS IS A PLACEHOLDER FUNCTION
 
@@ -262,17 +262,6 @@ namespace AircraftEval {
         double op_payfrac = 1e10;
         double op_NRG_paykm = 1e10; // MJ
         double op_emmiss_paykm = 1e10; // Tons CO2
-
-        // Set-up UDP socket
-        const char* IP = "192.168.1.150";     //IP Address of computer running X-Plane
-        XPCSocket sock = openUDP(IP);
-        float tVal[1];
-        int tSize = 1;
-        if (getDREF(sock, "sim/test/test_float", tVal, &tSize) < 0)
-        {
-            printf("Error establishing connecting. Unable to read data from X-Plane.");
-            return false;
-        }
 
         // Perform one "Tuning" iteration, then evaluate
         for (size_t i = 0; i < 2; i++) {
