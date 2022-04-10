@@ -345,7 +345,16 @@ namespace AircraftEval {
                 mass_nofuel, mass_payload, mass_JA1, mass_violation, volume_violation);
 
 
-            if (mass_violation || volume_violation) {    
+            if (mass_violation || volume_violation) {
+
+                if (mass_violation) {
+                    std::cout << "Mass Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                }
+
+                if (volume_violation) {
+                    std::cout << "Volume Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                }
+
                 break;
             }
 
@@ -359,10 +368,11 @@ namespace AircraftEval {
             // Reset the simulator and let it run for a while to achieve steady-state
             reset_sim(sock, ip_h, TAS);
 
-            read_violation = get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+            read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
 
             if (read_violation) {
-            break;
+                std::cout << "Read Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                break;
             }
 
             L_D = op_L / op_D;
