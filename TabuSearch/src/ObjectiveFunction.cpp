@@ -175,6 +175,9 @@ namespace AircraftEval {
         //op_eta_prop = static_cast<double>(eta_prop2);     
     }
 
+    void write_current_aircraft(MDR::Design) {};
+
+
     // Given an input configuration, evaluate its performance and
     // update the configuration with the performance metrics
     bool compute_f(TS::Config& ip_config, const XPCSocket sock) {
