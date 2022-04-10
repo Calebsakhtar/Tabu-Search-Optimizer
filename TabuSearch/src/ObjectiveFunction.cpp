@@ -434,7 +434,7 @@ namespace AircraftEval {
         MDR::Design performances(perf_vect, zero, zero, one);
         ip_config.set_performances(performances);
 
-        write_current_aircraft_data(ip_config, num_f_evals)
+        write_current_aircraft_data(ip_config, num_f_evals);
 
         return true;
     }
