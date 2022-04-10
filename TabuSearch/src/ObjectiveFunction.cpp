@@ -139,29 +139,34 @@ namespace AircraftEval {
         sleep(25); 
     }
 
-    void get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
+    bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
         
         int size = 1;
+        int comm_status = 0;
 
         float Lift = 1e10;
         const char* dref_lift = "sim/flightmodel/forces/fnrml_aero";
-        getDREF(sock, dref_lift, &Lift, &size);
+        comm_status += getDREF(sock, dref_lift, &Lift, &size);
         op_L = static_cast<double>(Lift);
 
         float Drag = 1e10;
         const char* dref_drag = "sim/flightmodel/forces/faxil_aero";
-        getDREF(sock, dref_drag, &Drag, &size);
+        comm_status += getDREF(sock, dref_drag, &Drag, &size);
         op_D = static_cast<double>(Drag);
 
         float Thrust = 1e10;
         const char* dref_thrust = "sim/flightmodel/forces/faxil_prop";
-        getDREF(sock, dref_thrust, &Thrust, &size);
+        comm_status += getDREF(sock, dref_thrust, &Thrust, &size);
         op_Thrust = static_cast<double>(Thrust);
 
         float TAS = 1e10;
         const char* dref_TAS = "sim/flightmodel/position/local_vx";
-        getDREF(sock, dref_TAS, &TAS, &size);
+        comm_status += getDREF(sock, dref_TAS, &TAS, &size);
         op_TAS = static_cast<double>(TAS);
+
+        // If reading data from X-Plane has failed, return false
+        if (comm_status < 0) { return false; }
+        return true;
 
         //float eta_prop[8] = { 1e10, 1e10, 1e10, 1e10, 1e10, 1e10, 1e10, 1e10 };
         //const char* dref_eta_prop = "sim/flightmodel/engine/POINT_prop_eff";
@@ -173,38 +178,6 @@ namespace AircraftEval {
     // Given an input configuration, evaluate its performance and
     // update the configuration with the performance metrics
     bool compute_f(TS::Config& ip_config, const XPCSocket sock) {
-
-        //// THIS IS A PLACEHOLDER FUNCTION
-
-        //std::vector<TS::Variable> variables = ip_config.get_vars();
-
-        //double obj_A = 0;
-        //double obj_B = 0;
-
-        //for (size_t i = 0; i < variables.size(); i++) {
-        //    double var_val = variables[i].get_val();
-        //    obj_A += (var_val - 4) * var_val + 3;
-        //    obj_B += 3 * sin(var_val * 10);//+= 5 - var_val;
-        //}
-
-        //// Formally Store Performance Metric A
-        //MDR::MetricID idA("Metric A", 0);
-        //MDR::PerfMetric perfA(idA, obj_A, true);
-
-        //// Formally Store Performance Metric B
-        //MDR::MetricID idB("Metric B", 1);
-        //MDR::PerfMetric perfB(idB, obj_B / 3, true);
-
-        //// Put them in a vector
-        //std::vector<MDR::PerfMetric> perf_vect = { perfA, perfB };
-
-        //// This is a bit silly but necessary
-        //size_t zero = 0;
-        //size_t one = 1;
-
-        //// Make a Design object and assign it to the input configuration
-        //MDR::Design performances(perf_vect, zero, zero, one);
-        //ip_config.set_performances(performances);
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
@@ -247,6 +220,7 @@ namespace AircraftEval {
         double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
+        bool read_violation = false;
 
         // Calculate the ISA values
         double ISA_T = 0;
@@ -306,10 +280,12 @@ namespace AircraftEval {
             // Reset the simulator and let it run for a while to achieve steady-state
             reset_sim(sock, ip_h, TAS);
 
-            get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+            read_violation = get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
 
-            // We will use the input L_D
-            if (i == 0) { L_D = op_L / op_D; }
+            if (read_violation) {
+            break;
+            }
+
             L_D = op_L / op_D;
         }
 
@@ -318,7 +294,7 @@ namespace AircraftEval {
         // Initialize the performance metric vector
         std::vector<MDR::PerfMetric> perf_vect;
 
-        if (mass_violation || volume_violation) {
+        if (mass_violation || volume_violation || read_violation) {
             op_L = 1e10;
             op_D = 1e10;
             op_Thrust = 1e10;
@@ -339,15 +315,14 @@ namespace AircraftEval {
             
             op_payfrac = mass_payload / mass_total;
             op_emmiss_paykm = mass_JA1 * emissions_per_kgJA1 / (mass_payload * ip_range);
-            op_L_D = Raymer_L_D_max;// L_D;
-            op_groundrun = 2; // AircraftModel::compute_ground_run_raymer(mass_total, S_wing, 1, 1, ip_P_max * kW_to_HP);
+            op_L_D = L_D;
+            //op_groundrun = 2; // AircraftModel::compute_ground_run_raymer(mass_total, S_wing, 1, 1, ip_P_max * kW_to_HP);
         }
         
         // Formally store the mission energy per payload km
         MDR::MetricID NRG_id("NRG (kJ/cargokm)", 0);
         MDR::PerfMetric NRG_perf(NRG_id, 1e3*op_NRG_paykm, true);
         perf_vect.push_back(NRG_perf);
-
 
         // Formally store the payload fraction
         MDR::MetricID payfrac_id("-Payload Fraction", 1);
@@ -360,12 +335,12 @@ namespace AircraftEval {
         perf_vect.push_back(totalm_perf);
 
         // Formally store the in-flight emissions per payload km
-        MDR::MetricID emms_id("Emmissions (kgCO2/cargokm)", 2);
+        MDR::MetricID emms_id("Emmissions (kgCO2/cargokm)", 3);
         MDR::PerfMetric emms_perf(emms_id, op_emmiss_paykm, true);
         perf_vect.push_back(emms_perf);
 
         // Formally store the Lift Over Drag
-        MDR::MetricID L_D_id("-L_D", 3);
+        MDR::MetricID L_D_id("-L_D", 4);
         MDR::PerfMetric L_D_perf(L_D_id, -op_L_D, true);
         perf_vect.push_back(L_D_perf);
 
