@@ -175,12 +175,88 @@ namespace AircraftEval {
         //op_eta_prop = static_cast<double>(eta_prop2);     
     }
 
-    void write_current_aircraft(MDR::Design) {};
+    void write_current_aircraft_data(const TS::Config& config, const int& p) {
+
+        // Make the file termination
+        std::string filename = std::to_string(p);
+
+        // Bad way to pad with zeroes
+        if (p < 10) {
+            filename = "0000" + filename;
+        }
+        else if (p < 100) {
+            filename = "000" + filename;
+        }
+        else if (p < 1000) {
+            filename = "00" + filename;
+        }
+        else if (p < 10000) {
+            filename = "0" + filename;
+        }
+
+        std::string filename_perf = "Results/Aircraft" + filename + "_Perf.csv";
+        std::string filename_coords = "Results/Aircraft" + filename + "_Coords.csv";
+
+
+
+
+        // Create and open a text file to store the coordinates of all the Visited Points
+        std::ofstream OpFileCoords(filename_coords);
+
+        size_t vars_size = config.get_vars().size();
+
+        for (size_t i = 0; i < vars_size - 1; i++) {
+            OpFileCoords << "Variable" << std::to_string(i + 1) << ",";
+        }
+
+        OpFileCoords << "Variable" << std::to_string(vars_size);
+
+
+        OpFileCoords << "\n";
+
+        std::vector<TS::Variable> current_coords = config.get_vars();
+
+        for (size_t j = 0; j < current_coords.size() - 1; j++) {
+            OpFileCoords << std::to_string(current_coords[j].get_val()) << ",";
+        }
+
+        OpFileCoords << std::to_string(current_coords[current_coords.size() - 1].get_val());
+
+        // Close the file
+        OpFileCoords.close();
+
+
+
+
+        // Create and open a text file to store the performances of all the Visited Points
+        std::ofstream OpFilePerf(filename_perf);
+
+        size_t perf_size = config.get_performances().get_perf_vector().size();
+
+        for (size_t i = 0; i < perf_size; i++) {
+            OpFilePerf << "Objective" << std::to_string(i + 1) << ",";
+        }
+
+        OpFilePerf << "Objective" << std::to_string(perf_size);
+
+        OpFilePerf << "\n";
+
+        std::vector<MDR::PerfMetric> current_perfs = config.get_performances().get_perf_vector();
+
+        for (size_t j = 0; j < current_perfs.size() - 1; j++) {
+            OpFilePerf << std::to_string(current_perfs[j].get_metric_val()) << ",";
+        }
+
+        OpFilePerf << std::to_string(current_perfs[current_perfs.size() - 1].get_metric_val());
+
+        // Close the file
+        OpFilePerf.close();
+    };
 
 
     // Given an input configuration, evaluate its performance and
     // update the configuration with the performance metrics
-    bool compute_f(TS::Config& ip_config, const XPCSocket sock) {
+    bool compute_f(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals) {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
@@ -357,6 +433,8 @@ namespace AircraftEval {
         size_t one = 1;
         MDR::Design performances(perf_vect, zero, zero, one);
         ip_config.set_performances(performances);
+
+        write_current_aircraft_data(ip_config, num_f_evals)
 
         return true;
     }
