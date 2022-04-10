@@ -366,7 +366,7 @@ namespace TS {
 			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
 			// Create and open a text file to store the Coordinates of all the Visited Points
-			std::ofstream OpFile("PointCoords.csv");
+			std::ofstream OpFile("Results/PointCoords.csv");
 
 			if (all_pts.size() > 0) {
 
@@ -422,7 +422,7 @@ namespace TS {
 			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
 			// Create and open a text file to store the performances of all the Visited Points
-			std::ofstream OpFile("AllPoints.csv");
+			std::ofstream OpFile("Results/AllPointsPerf.csv");
 
 			if (all_pts.size() > 0) {
 
@@ -479,7 +479,7 @@ namespace TS {
 			std::vector<TS::Config> result_MTM = retreive_MTM();
 
 			// Create and open a text file to store the ParetoFront in
-			std::ofstream OpFile("ParetoPoints.csv");
+			std::ofstream OpFile("Results/ParetoPoints.csv");
 
 			if (result_MTM.size() > 0) {
 
