@@ -3,6 +3,14 @@
 
 namespace AircraftEval {
 
+    void display_aircraft_data(const double& x_CG_nofuel, const double& M_nofuel, 
+        const double& ip_h, const double& ip_TAS, const double& ip_BSFC_full, 
+        const double& ip_BSFC_full_low, const double& P_max, double M_fuel, 
+        const double& H2_M_prop) {
+    
+    }
+
+
 	void init_simulator(XPCSocket sock) {
         // Set Location/Orientation (sendPOSI)
         // Set Up Position Array
@@ -62,7 +70,7 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        float ap_hdg2_val = 2; // hdg hold
+        float ap_hdg2_val = 4; // wing level hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
 
         // pauseSim
@@ -74,6 +82,10 @@ namespace AircraftEval {
 	}
 
     void reset_sim(XPCSocket sock, const double& ip_h, const double& ip_TAS) {
+        // Resets the simulator (at the appropriate height ip_h and true airspeed ip_TAS).
+        //
+        // Height ip_h is in m
+        // True Airspeed ip_TAS is in m/s
         
         // Convert inputs to float and also convert height to meters
         float height = 1000 * static_cast<float>(ip_h); // m
@@ -85,7 +97,7 @@ namespace AircraftEval {
 
         POSI[0] = 51.875278627882849;
         POSI[1] = 0.22022808392539564;
-        POSI[2] = 1.1 * height; // 10% higher to account for transient
+        POSI[2] = height;
         POSI[3] = -1.6440951824188232;
         POSI[4] = -0.14142291247844696;
         POSI[5] = 42.833587646484375;
@@ -105,6 +117,11 @@ namespace AircraftEval {
         float ap_mode_val = 2; // off=0, flight director=1, on=2
         sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
 
+        const char* ap_airspeed_dref = "sim/cockpit/autopilot/airspeed";
+        double IAS = AircraftModel::TAS_to_IAS(ip_TAS, ip_h / 1000);
+        float ap_airspeed_val = static_cast<float>(IAS); // IAS, m/s
+        sendDREF(sock, ap_airspeed_dref, &ap_airspeed_val, 1); // Send data
+
         // Convert the height to feet
         const float m_to_feet = 3.28084;
         height *= m_to_feet;
@@ -115,37 +132,41 @@ namespace AircraftEval {
         float ap_vs_val = 1000; // in ft/min above sea level
         sendDREF(sock, ap_vs_dref, &ap_vs_val, 1); // Send data
 
-        const char* ap_hdg_dref = "sim/cockpit/autopilot/heading"; // AP Heading
-        float ap_hdg_val = 43; // in ft/min above sea level
-        sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
+        float ap_athr_val = 1; // change autothrottle
+        sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(30); 
+        sleep(25); 
     }
 
-    void get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
+    bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
         
         int size = 1;
+        int comm_status = 0;
 
         float Lift = 1e10;
-        const char* dref_lift = "sim/flightmodel/forces/fnrml_aero";
-        getDREF(sock, dref_lift, &Lift, &size);
+        const char* dref_lift = "sim/flightmodel/forces/lift_path_axis"; //fnrml_aero
+        comm_status += getDREF(sock, dref_lift, &Lift, &size);
         op_L = static_cast<double>(Lift);
 
         float Drag = 1e10;
-        const char* dref_drag = "sim/flightmodel/forces/faxil_aero";
-        getDREF(sock, dref_drag, &Drag, &size);
+        const char* dref_drag = "sim/flightmodel/forces/drag_path_axis"; // faxil_aero
+        comm_status += getDREF(sock, dref_drag, &Drag, &size);
         op_D = static_cast<double>(Drag);
 
         float Thrust = 1e10;
         const char* dref_thrust = "sim/flightmodel/forces/faxil_prop";
-        getDREF(sock, dref_thrust, &Thrust, &size);
+        comm_status += getDREF(sock, dref_thrust, &Thrust, &size);
         op_Thrust = static_cast<double>(Thrust);
 
         float TAS = 1e10;
         const char* dref_TAS = "sim/flightmodel/position/local_vx";
-        getDREF(sock, dref_TAS, &TAS, &size);
+        comm_status += getDREF(sock, dref_TAS, &TAS, &size);
         op_TAS = static_cast<double>(TAS);
+
+        // If reading data from X-Plane has failed, return false
+        if (comm_status < 0) { return false; }
+        return true;
 
         //float eta_prop[8] = { 1e10, 1e10, 1e10, 1e10, 1e10, 1e10, 1e10, 1e10 };
         //const char* dref_eta_prop = "sim/flightmodel/engine/POINT_prop_eff";
@@ -154,41 +175,88 @@ namespace AircraftEval {
         //op_eta_prop = static_cast<double>(eta_prop2);     
     }
 
+    void write_current_aircraft_data(const TS::Config& config, const int& p) {
+
+        // Make the file termination
+        std::string filename = std::to_string(p);
+
+        // Bad way to pad with zeroes
+        if (p < 10) {
+            filename = "0000" + filename;
+        }
+        else if (p < 100) {
+            filename = "000" + filename;
+        }
+        else if (p < 1000) {
+            filename = "00" + filename;
+        }
+        else if (p < 10000) {
+            filename = "0" + filename;
+        }
+
+        std::string filename_perf = "Results/Aircraft" + filename + "_Perf.csv";
+        std::string filename_coords = "Results/Aircraft" + filename + "_Coords.csv";
+
+
+
+
+        // Create and open a text file to store the coordinates of all the Visited Points
+        std::ofstream OpFileCoords(filename_coords);
+
+        size_t vars_size = config.get_vars().size();
+
+        for (size_t i = 0; i < vars_size - 1; i++) {
+            OpFileCoords << "Variable" << std::to_string(i + 1) << ",";
+        }
+
+        OpFileCoords << "Variable" << std::to_string(vars_size);
+
+
+        OpFileCoords << "\n";
+
+        std::vector<TS::Variable> current_coords = config.get_vars();
+
+        for (size_t j = 0; j < current_coords.size() - 1; j++) {
+            OpFileCoords << std::to_string(current_coords[j].get_val()) << ",";
+        }
+
+        OpFileCoords << std::to_string(current_coords[current_coords.size() - 1].get_val());
+
+        // Close the file
+        OpFileCoords.close();
+
+
+
+
+        // Create and open a text file to store the performances of all the Visited Points
+        std::ofstream OpFilePerf(filename_perf);
+
+        size_t perf_size = config.get_performances().get_perf_vector().size();
+
+        for (size_t i = 0; i < perf_size; i++) {
+            OpFilePerf << "Objective" << std::to_string(i + 1) << ",";
+        }
+
+        OpFilePerf << "Objective" << std::to_string(perf_size);
+
+        OpFilePerf << "\n";
+
+        std::vector<MDR::PerfMetric> current_perfs = config.get_performances().get_perf_vector();
+
+        for (size_t j = 0; j < current_perfs.size() - 1; j++) {
+            OpFilePerf << std::to_string(current_perfs[j].get_metric_val()) << ",";
+        }
+
+        OpFilePerf << std::to_string(current_perfs[current_perfs.size() - 1].get_metric_val());
+
+        // Close the file
+        OpFilePerf.close();
+    };
+
+
     // Given an input configuration, evaluate its performance and
     // update the configuration with the performance metrics
-    bool compute_f(TS::Config& ip_config, const XPCSocket sock) {
-
-        //// THIS IS A PLACEHOLDER FUNCTION
-
-        //std::vector<TS::Variable> variables = ip_config.get_vars();
-
-        //double obj_A = 0;
-        //double obj_B = 0;
-
-        //for (size_t i = 0; i < variables.size(); i++) {
-        //    double var_val = variables[i].get_val();
-        //    obj_A += (var_val - 4) * var_val + 3;
-        //    obj_B += 3 * sin(var_val * 10);//+= 5 - var_val;
-        //}
-
-        //// Formally Store Performance Metric A
-        //MDR::MetricID idA("Metric A", 0);
-        //MDR::PerfMetric perfA(idA, obj_A, true);
-
-        //// Formally Store Performance Metric B
-        //MDR::MetricID idB("Metric B", 1);
-        //MDR::PerfMetric perfB(idB, obj_B / 3, true);
-
-        //// Put them in a vector
-        //std::vector<MDR::PerfMetric> perf_vect = { perfA, perfB };
-
-        //// This is a bit silly but necessary
-        //size_t zero = 0;
-        //size_t one = 1;
-
-        //// Make a Design object and assign it to the input configuration
-        //MDR::Design performances(perf_vect, zero, zero, one);
-        //ip_config.set_performances(performances);
+    bool compute_f(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals) {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
@@ -228,8 +296,10 @@ namespace AircraftEval {
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
         double mass_JA1 = 0; // kg
+        double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
+        bool read_violation = false;
 
         // Calculate the ISA values
         double ISA_T = 0;
@@ -275,21 +345,36 @@ namespace AircraftEval {
                 mass_nofuel, mass_payload, mass_JA1, mass_violation, volume_violation);
 
 
-            if (mass_violation || volume_violation) {    
+            if (mass_violation || volume_violation) {
+
+                if (mass_violation) {
+                    std::cout << "Mass Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                }
+
+                if (volume_violation) {
+                    std::cout << "Volume Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                }
+
                 break;
             }
-
 
             // Write the load data to the ACF file
             PlaneMakerTools::set_weight_data(x_cg_nofuel, mass_nofuel, acf_filepath);
 
-            // Reset the simulator and let it run for 7 seconds
+            // Write the fuel data to the ACF file
+            H2_mprop = (w_fuel - mass_JA1) / w_fuel;
+            PlaneMakerTools::set_fuel_data(w_fuel, x_H2_tanks, H2_mprop, acf_filepath);
+
+            // Reset the simulator and let it run for a while to achieve steady-state
             reset_sim(sock, ip_h, TAS);
 
-            get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+            read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
 
-            // We will use the input L_D
-            if (i == 0) { L_D = op_L / op_D; }
+            if (read_violation) {
+                std::cout << "Read Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                break;
+            }
+
             L_D = op_L / op_D;
         }
 
@@ -298,7 +383,7 @@ namespace AircraftEval {
         // Initialize the performance metric vector
         std::vector<MDR::PerfMetric> perf_vect;
 
-        if (mass_violation || volume_violation) {
+        if (mass_violation || volume_violation || read_violation) {
             op_L = 1e10;
             op_D = 1e10;
             op_Thrust = 1e10;
@@ -319,15 +404,14 @@ namespace AircraftEval {
             
             op_payfrac = mass_payload / mass_total;
             op_emmiss_paykm = mass_JA1 * emissions_per_kgJA1 / (mass_payload * ip_range);
-            op_L_D = Raymer_L_D_max;// L_D;
-            op_groundrun = 2; // AircraftModel::compute_ground_run_raymer(mass_total, S_wing, 1, 1, ip_P_max * kW_to_HP);
+            op_L_D = L_D;
+            //op_groundrun = 2; // AircraftModel::compute_ground_run_raymer(mass_total, S_wing, 1, 1, ip_P_max * kW_to_HP);
         }
         
         // Formally store the mission energy per payload km
         MDR::MetricID NRG_id("NRG (kJ/cargokm)", 0);
         MDR::PerfMetric NRG_perf(NRG_id, 1e3*op_NRG_paykm, true);
         perf_vect.push_back(NRG_perf);
-
 
         // Formally store the payload fraction
         MDR::MetricID payfrac_id("-Payload Fraction", 1);
@@ -340,12 +424,12 @@ namespace AircraftEval {
         perf_vect.push_back(totalm_perf);
 
         // Formally store the in-flight emissions per payload km
-        MDR::MetricID emms_id("Emmissions (kgCO2/cargokm)", 2);
+        MDR::MetricID emms_id("Emmissions (kgCO2/cargokm)", 3);
         MDR::PerfMetric emms_perf(emms_id, op_emmiss_paykm, true);
         perf_vect.push_back(emms_perf);
 
         // Formally store the Lift Over Drag
-        MDR::MetricID L_D_id("-L_D", 3);
+        MDR::MetricID L_D_id("-L_D", 4);
         MDR::PerfMetric L_D_perf(L_D_id, -op_L_D, true);
         perf_vect.push_back(L_D_perf);
 
@@ -359,6 +443,8 @@ namespace AircraftEval {
         size_t one = 1;
         MDR::Design performances(perf_vect, zero, zero, one);
         ip_config.set_performances(performances);
+
+        write_current_aircraft_data(ip_config, num_f_evals);
 
         return true;
     }

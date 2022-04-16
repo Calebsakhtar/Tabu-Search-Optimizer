@@ -20,7 +20,7 @@ namespace TS {
 		m_initial_config = initial_config;
 
 		// Compute the objective function (result stored in candidate_point)
-		AircraftEval::compute_f(m_initial_config, m_sock);
+		AircraftEval::compute_f(m_initial_config, m_sock, m_f_eval_num);
 		m_initial_config.initialize_ranks(m_dom_rels);
 		m_f_eval_num = 1;
 
@@ -130,7 +130,7 @@ namespace TS {
 				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock);
+				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
@@ -180,7 +180,7 @@ namespace TS {
 					HJ_configs_new.erase(HJ_configs_new.begin());
 
 					// Compute the objective function (result stored in candidate_point)
-					AircraftEval::compute_f(candidate_config, m_sock);
+					AircraftEval::compute_f(candidate_config, m_sock, m_f_eval_num);
 					m_f_eval_num++;
 					candidate_config.initialize_ranks(m_dom_rels);
 
@@ -274,7 +274,7 @@ namespace TS {
 				if (next_config.is_feasible() && !m_STM.in_STM(next_config)) {
 
 					// Compute the objective function (result stored in candidate_point)
-					AircraftEval::compute_f(next_config, m_sock);
+					AircraftEval::compute_f(next_config, m_sock, m_f_eval_num);
 					m_f_eval_num++;
 					next_config.initialize_ranks(m_dom_rels);
 
@@ -317,7 +317,7 @@ namespace TS {
 				m_IM.intensify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock);
+				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
@@ -334,7 +334,7 @@ namespace TS {
 				m_LTM.diversify(current_config, m_generator);
 
 				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock);
+				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
 				m_f_eval_num++;
 				current_config.initialize_ranks(m_dom_rels);
 
@@ -366,7 +366,7 @@ namespace TS {
 			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
 			// Create and open a text file to store the Coordinates of all the Visited Points
-			std::ofstream OpFile("PointCoords.csv");
+			std::ofstream OpFile("Results/PointCoords.csv");
 
 			if (all_pts.size() > 0) {
 
@@ -422,7 +422,7 @@ namespace TS {
 			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
 			// Create and open a text file to store the performances of all the Visited Points
-			std::ofstream OpFile("AllPoints.csv");
+			std::ofstream OpFile("Results/AllPointsPerf.csv");
 
 			if (all_pts.size() > 0) {
 
@@ -479,7 +479,7 @@ namespace TS {
 			std::vector<TS::Config> result_MTM = retreive_MTM();
 
 			// Create and open a text file to store the ParetoFront in
-			std::ofstream OpFile("ParetoPoints.csv");
+			std::ofstream OpFile("Results/ParetoPoints.csv");
 
 			if (result_MTM.size() > 0) {
 
