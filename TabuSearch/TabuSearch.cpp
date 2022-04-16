@@ -117,6 +117,7 @@ int main()
     // Print the relevant quantities for MATLAB Visualization
     Optimizer.print_pareto_front();
     Optimizer.print_visited_pts_loc_perf();
+    Optimizer.print_pareto_front_layers();
 
     // Mark the end of the program
     printf("---End Program---\n");

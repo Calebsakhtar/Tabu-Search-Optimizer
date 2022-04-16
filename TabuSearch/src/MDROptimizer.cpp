@@ -8,89 +8,8 @@ namespace TS {
 
 
 	// PRIVATE FUNCTIONS
-			
-	// Find all pareto front layers
-	bool MDROptimizer::find_pareto_front_layers(std::vector<std::vector<Config>>& 
-		op_vect) const {
+		
 
-		// If not optimized, fail
-		if (!m_optimized) {
-			return false;
-		}
-
-		// Retrieve all visited points
-		std::vector<TS::Config> current_pts = retrieve_all_pts();
-
-		// If the current points size is zero, or there are no dom rels, fail
-		if (current_pts.size() < 1 || m_dom_rels.size() < 1) {
-			return false;
-		}
-
-		// Initialize a temporary output
-		std::vector<std::vector<Config>> paretos_list(m_dom_rels.size());
-
-		// Define the maximum rank
-		size_t max_rank = current_pts.size() + 1;
-	
-		// For each dominance relation, we need to find the pareto front
-		for (size_t i = 0; i < m_dom_rels.size(); i++) {
-			
-			// Initialize a temp vector
-			std::vector<TS::Config> current_pareto;
-
-			// Initialize the minimum known rank
-			size_t min_rank = max_rank;
-
-			// For each member of the current point vector, check whether its rank
-			// is below the suspected minimum
-			for (size_t j = 0; j < current_pts.size(); j++) {
-
-				Config current_pt = current_pts[j];
-				size_t current_rank = current_pt.get_ranks()[i];
-
-				if (current_rank < min_rank) {
-					// If the current rank is beneath the known min rank set the new min rank.
-					min_rank = current_rank;
-				}
-			}
-
-			// For each member of the current point vector, check whether its rank
-			// is equal to the known minimum
-			for (size_t j = 0; j < current_pts.size(); j++) {
-
-				Config current_pt = current_pts[j];
-				size_t current_rank = current_pt.get_ranks()[i];
-
-				// Add the point to the pareto front
-				if (current_rank == min_rank) {
-					current_pareto.push_back(current_pt);
-				}
-			}
-
-			// Set the found pareto front as the ith OP pareto front
-			paretos_list[i] = current_pareto;
-
-			// If there is only one point left, populate the rest of the output vector
-			// with the one point and stop
-			if (current_pareto.size() < 2) {
-
-				for (size_t k = i + 1; k < m_dom_rels.size(); k++) {
-					paretos_list[k] = current_pareto;
-				}
-
-				// Output the pareto fronts
-				op_vect = paretos_list;
-				return true;
-			}
-
-			// The next set of candidate points are the current pareto front points
-			current_pts = current_pareto;
-		}
-
-		// Output the pareto fronts
-		op_vect = paretos_list;
-		return true;	
-	}
 	
 	// Print the performances
 	bool MDROptimizer::print_configs(const std::vector<TS::Config>& configs, 
@@ -542,6 +461,89 @@ namespace TS {
 		m_optimized = true;
 	}
 
+	// Find all pareto front layers
+	bool MDROptimizer::find_pareto_front_layers(std::vector<std::vector<Config>>&
+		op_vect) const {
+
+		// If not optimized, fail
+		if (!m_optimized) {
+			return false;
+		}
+
+		// Retrieve all visited points
+		std::vector<TS::Config> current_pts = retrieve_all_pts();
+
+		// If the current points size is zero, or there are no dom rels, fail
+		if (current_pts.size() < 1 || m_dom_rels.size() < 1) {
+			return false;
+		}
+
+		// Initialize a temporary output
+		std::vector<std::vector<Config>> paretos_list(m_dom_rels.size());
+
+		// Define the maximum rank
+		size_t max_rank = current_pts.size() + 1;
+
+		// For each dominance relation, we need to find the pareto front
+		for (size_t i = 0; i < m_dom_rels.size(); i++) {
+
+			// Initialize a temp vector
+			std::vector<TS::Config> current_pareto;
+
+			// Initialize the minimum known rank
+			size_t min_rank = max_rank;
+
+			// For each member of the current point vector, check whether its rank
+			// is below the suspected minimum
+			for (size_t j = 0; j < current_pts.size(); j++) {
+
+				Config current_pt = current_pts[j];
+				size_t current_rank = current_pt.get_ranks()[i];
+
+				if (current_rank < min_rank) {
+					// If the current rank is beneath the known min rank set the new min rank.
+					min_rank = current_rank;
+				}
+			}
+
+			// For each member of the current point vector, check whether its rank
+			// is equal to the known minimum
+			for (size_t j = 0; j < current_pts.size(); j++) {
+
+				Config current_pt = current_pts[j];
+				size_t current_rank = current_pt.get_ranks()[i];
+
+				// Add the point to the pareto front
+				if (current_rank == min_rank) {
+					current_pareto.push_back(current_pt);
+				}
+			}
+
+			// Set the found pareto front as the ith OP pareto front
+			paretos_list[i] = current_pareto;
+
+			// If there is only one point left, populate the rest of the output vector
+			// with the one point and stop
+			if (current_pareto.size() < 2) {
+
+				for (size_t k = i + 1; k < m_dom_rels.size(); k++) {
+					paretos_list[k] = current_pareto;
+				}
+
+				// Output the pareto fronts
+				op_vect = paretos_list;
+				return true;
+			}
+
+			// The next set of candidate points are the current pareto front points
+			current_pts = current_pareto;
+		}
+
+		// Output the pareto fronts
+		op_vect = paretos_list;
+		return true;
+	}
+
 	// Print the performances and locations of all visited points
 	bool MDROptimizer::print_visited_pts_loc_perf() const {
 
@@ -581,22 +583,50 @@ namespace TS {
 		}
 	}
 
-
 	bool MDROptimizer::print_pareto_front_layers() const {
 
-		if (m_optimized) {
-			// Retrieve all visited points
-			std::vector<TS::Config> all_pts = retrieve_all_pts();
-
-			// Create and open a text file to store the performances of all the Visited Points
-			std::string filename = "AllPoints";
-
-			return print_configs(all_pts, filename);
-
-		}
-		else
-		{
+		// Check that the optimization has been performed
+		if (!m_optimized) {
 			return false;
 		}
+
+		// Retrieve all visited points
+		std::vector<std::vector<TS::Config>> pareto_fronts;
+
+		// Check retrieval of pareto front is successful
+		if (!find_pareto_front_layers(pareto_fronts)) {
+			return false;
+		}
+
+		// Check that the pareto fronts are not empty
+		if (pareto_fronts.size() < 1) {
+			return false;
+		}
+
+		// Initialize the Filename Base
+		std::string filename_base = "ParetoFrontLayer";
+
+		// Initialize the print success bool
+		bool print_success = true;
+
+		// For each pareto front
+		for (size_t i = 0; i < pareto_fronts.size(); i++) {
+			
+			// Initialize the filename
+			std::string filename = filename_base;
+
+			// Add the correct number
+			if (i < 10) {
+				filename += "00" + std::to_string(i);
+			}
+			else {
+				filename += "0" + std::to_string(i);
+			}
+
+			// Print the current pareto front
+			print_success &= print_configs(pareto_fronts[i], filename);
+		}
+
+		return print_success;
 	}
 }
