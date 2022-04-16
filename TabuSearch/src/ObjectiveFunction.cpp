@@ -145,12 +145,12 @@ namespace AircraftEval {
         int comm_status = 0;
 
         float Lift = 1e10;
-        const char* dref_lift = "sim/flightmodel/forces/fnrml_aero";
+        const char* dref_lift = "sim/flightmodel/forces/lift_path_axis"; //fnrml_aero
         comm_status += getDREF(sock, dref_lift, &Lift, &size);
         op_L = static_cast<double>(Lift);
 
         float Drag = 1e10;
-        const char* dref_drag = "sim/flightmodel/forces/faxil_aero";
+        const char* dref_drag = "sim/flightmodel/forces/drag_path_axis"; // faxil_aero
         comm_status += getDREF(sock, dref_drag, &Drag, &size);
         op_D = static_cast<double>(Drag);
 
