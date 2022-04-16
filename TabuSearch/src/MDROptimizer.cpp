@@ -129,7 +129,7 @@ namespace TS {
 				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
-				m_MTM.consider_config(current_config);
+				m_MTM.consider_config_MDR(current_config);
 				m_STM.add_to_STM(current_config);
 				m_LTM.update_tally(current_config);
 
@@ -248,13 +248,13 @@ namespace TS {
 			current_config.get_prev_move_data(prev_increase, prev_idx);
 			
 			// Add the current point to the MTM, STM and LTM
-			bool new_MTM_config = m_MTM.consider_config(current_config);
+			bool new_MTM_config = m_MTM.consider_config_MDR(current_config);
 			m_STM.add_to_STM(current_config);
 			m_LTM.update_tally(current_config);
 
 			// Add the remaining points to the IM
 			for (size_t i = 1; i < dominant_configs.size(); i++) {
-				m_IM.consider_config(dominant_configs[i]);
+				m_IM.consider_config_MDR(dominant_configs[i]);
 			}
 
 			// Attempt a pattern move
@@ -283,7 +283,7 @@ namespace TS {
 						current_config.get_prev_move_data(prev_increase, prev_idx);
 
 						// Add the current point to the MTM, STM and LTM
-						new_MTM_config = new_MTM_config || m_MTM.consider_config(current_config);
+						new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(current_config);
 						m_STM.add_to_STM(current_config);
 						m_LTM.update_tally(current_config);
 
@@ -316,7 +316,7 @@ namespace TS {
 				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
-				m_MTM.consider_config(current_config);
+				m_MTM.consider_config_MDR(current_config);
 				m_STM.add_to_STM(current_config);
 				m_LTM.update_tally(current_config);
 
@@ -333,7 +333,7 @@ namespace TS {
 				current_config.initialize_ranks(m_dom_rels);
 
 				// Add the current point to the MTM, STM and LTM
-				m_MTM.consider_config(current_config);
+				m_MTM.consider_config_MDR(current_config);
 				m_STM.add_to_STM(current_config);
 				m_LTM.update_tally(current_config);
 
