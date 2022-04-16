@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <iostream>
+#include <fstream>
 
 #include "Config.h"
 #include "XPlaneConnect.h"
@@ -18,7 +20,7 @@ namespace AircraftEval {
 
 	// Given an input configuration, evaluate its performance and
 	// update the configuration with the performance metrics
-	bool compute_f(TS::Config& ip_config);
+	bool compute_f(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals = 0);
 }
 
 #endif

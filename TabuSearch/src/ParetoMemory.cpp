@@ -111,6 +111,18 @@ namespace TS {
 			return false;
 		}
 
+		// Remove the required indexes in reverse order to preserve correct elements
+		if (idx_to_erase.size() > 0) {
+			for (size_t i = 0; i < idx_to_erase.size(); i++) {
+
+				size_t erase_idx = idx_to_erase[idx_to_erase.size() - i - 1];
+				m_configs.erase(m_configs.begin() + erase_idx);
+			}
+		}
+		else {
+			return false;
+		}
+
 		// Add the candidate design to the ParetoMemory
 		m_configs.push_back(new_config);
 

@@ -7,7 +7,7 @@ cal_blue = [50 142 216]/255;
 cal_grey_light = [0.95 0.95 0.95];
 cal_grey_dark = [0.35 0.35 0.35];
 
-allpoints = readtable('AllPoints.csv');
+allpoints = readtable('AllPointsPerf.csv');
 pareto = readtable('ParetoPoints.csv');
 coords = readtable('PointCoords.csv');
 

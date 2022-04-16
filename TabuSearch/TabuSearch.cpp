@@ -13,16 +13,15 @@
 
 int main()
 {
-
     // Initialize the vector containing the variables
     std::vector<TS::Variable> vars;
 
     // Create a variable for the Hydrogen power fraction
     std::array<double, 2> feas_reg_H2_Pfrac = { 0, 1 };
     std::vector<std::array<double, 2>> feas_regs_H2_Pfrac = { feas_reg_H2_Pfrac };
-    const double start_H2_Pfrac = 0.0;
-    const double stepsize_H2_Pfrac = 0.2;
-    const double stepsize_min_H2_Pfrac = 0.001;
+    const double start_H2_Pfrac = 0.5;
+    const double stepsize_H2_Pfrac = 0.4;
+    const double stepsize_min_H2_Pfrac = 0.05;
     const std::string name_H2_Pfrac = "Hydrogen Power Fraction";
     TS::Variable var_H2_Pfrac(false, feas_regs_H2_Pfrac, stepsize_min_H2_Pfrac, start_H2_Pfrac,
         stepsize_H2_Pfrac, name_H2_Pfrac);
@@ -33,7 +32,7 @@ int main()
     std::vector<std::array<double, 2>> feas_regs_range = { feas_reg_range };
     const double start_range = 1400; // km
     const double stepsize_range = 400; // km
-    const double stepsize_min_range = 0.01; // km
+    const double stepsize_min_range = 100; // km
     const std::string name_range = "Range (km)";
     TS::Variable var_range(false, feas_regs_range, stepsize_min_range, start_range, stepsize_range,
         name_range);
@@ -55,7 +54,7 @@ int main()
     std::vector<std::array<double, 2>> feas_regs_h = { feas_reg_h };
     const double start_h = 6.100; // km (20000 ft)
     const double stepsize_h = 0.620; // km
-    const double stepsize_min_h = 0.100; // km
+    const double stepsize_min_h = 0.300; // km
     const std::string name_h = "Cruise Altitude (km)";
     TS::Variable var_h(false, feas_regs_h, stepsize_min_h, start_h, stepsize_h, name_h);
     vars.push_back(var_h);
@@ -74,33 +73,26 @@ int main()
     TS::Config initial_point(vars);
 
     // Specify the MDR Layers of Dominance
-    MDR::DomRel first_layer(0, 1);
-    MDR::DomRel first_layer1(0, 2);
-    std::vector<MDR::DomRel> dom_rels = { first_layer, first_layer1};
-
-    //MDR::DomRel second_layer(2, 3);
-    //MDR::DomRel third_layer(3, 4);
-    //std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer, third_layer };
+    MDR::DomRel first_layer(3, 4);
+    MDR::DomRel second_layer(0, 4);
+    MDR::DomRel third_layer(1, 2);
+    std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer, third_layer };
 
     // Specify the TS Parameters
     size_t STM_size = 7;
-    double reduction_factor = 0.95;
+    double reduction_factor = 0.5;
     unsigned seed = 1;
     size_t INTENSIFY = 10;
     size_t DIVERSIFY = 15;
     size_t REDUCE = 25;
-    size_t max_eval_num = 20000;
+    size_t max_eval_num = 2000;
     size_t HJ_num = 8;
 
-    // Instantiate the Optimizer object
-    TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, INTENSIFY,
-        DIVERSIFY, REDUCE, max_eval_num, HJ_num);
-
     // Set up the simulation
-    printf("XPlaneConnect Example Script\n- Setting up Simulation\n");
+    printf("Setting up Simulation\n");
 
     // Open Socket
-    const char* IP = "128.232.250.212";     //IP Address of computer running X-Plane
+    const char* IP = "192.168.1.150";     //IP Address of computer running X-Plane
     XPCSocket sock = openUDP(IP);
     float tVal[1];
     int tSize = 1;
@@ -109,8 +101,13 @@ int main()
         printf("Error establishing connecting. Unable to read data from X-Plane.");
         return EXIT_FAILURE;
     }
+    else {
+        printf("Initial connection successful.\n");
+    }
 
-    AircraftEval::init_simulator(sock);
+    // Instantiate the Optimizer object
+    TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, sock, INTENSIFY,
+        DIVERSIFY, REDUCE, max_eval_num, HJ_num);
 
     // Perform the optimization and store the results
     Optimizer.perform_optimization();
