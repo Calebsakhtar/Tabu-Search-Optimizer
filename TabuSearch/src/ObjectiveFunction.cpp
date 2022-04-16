@@ -258,6 +258,8 @@ namespace AircraftEval {
     // update the configuration with the performance metrics
     bool compute_f(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals) {
 
+        std::cout << "\n" << "Simulating Aircraft " << std::to_string(num_f_evals) << "\n";
+
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
         const double ip_H2_Pfrac = variables[0].get_val();
