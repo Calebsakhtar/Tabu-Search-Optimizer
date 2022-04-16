@@ -35,8 +35,9 @@ namespace TS {
 		// Set the performances from an input vector of performances
 		void set_perf_vect(const std::vector<MDR::Design>& ip_vect);
 
-		// Replace the oldest configuration of the ParetoMemory with the new point visited
-		bool consider_config(const Config& new_config);
+		//// DEPRECATED
+		//// Replace the oldest configuration of the ParetoMemory with the new point visited
+		//bool consider_config(const Config& new_config);
 
 		// Replace the oldest configuration of the ParetoMemory with the new point visited
 		// (using MDR)
