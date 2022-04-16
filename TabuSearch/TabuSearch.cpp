@@ -73,10 +73,10 @@ int main()
     TS::Config initial_point(vars);
 
     // Specify the MDR Layers of Dominance
-    MDR::DomRel first_layer(3, 4);
-    MDR::DomRel second_layer(0, 4);
-    MDR::DomRel third_layer(1, 2);
-    std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer, third_layer };
+    MDR::DomRel first_layer(0, 1); // 3, 4
+    MDR::DomRel second_layer(2, 3); // 0, 4
+    MDR::DomRel third_layer(4, 4); // 1, 2
+    std::vector<MDR::DomRel> dom_rels = { first_layer }; //{ first_layer, second_layer, third_layer }
 
     // Specify the TS Parameters
     size_t STM_size = 7;
@@ -85,7 +85,7 @@ int main()
     size_t INTENSIFY = 10;
     size_t DIVERSIFY = 15;
     size_t REDUCE = 25;
-    size_t max_eval_num = 20;
+    size_t max_eval_num = 50;
     size_t HJ_num = 8;
 
     // Set up the simulation
@@ -98,7 +98,7 @@ int main()
     int tSize = 1;
     if (getDREF(sock, "sim/test/test_float", tVal, &tSize) < 0)
     {
-        printf("Error establishing connecting. Unable to read data from X-Plane.");
+        printf("Error establishing connection. Unable to read data from X-Plane.");
         return EXIT_FAILURE;
     }
     else {

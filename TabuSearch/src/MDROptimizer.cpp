@@ -258,6 +258,8 @@ namespace TS {
 				continue;
 			}
 
+			// Store whether a new configuration has been added to the MTM
+			bool new_MTM_config;
 
 			// Loop to figure out the best generated point
 			while (!move_on) {
@@ -292,6 +294,9 @@ namespace TS {
 
 					// Add the canidate points to the All Point Memory (APM) and update its rank
 					m_APM.add_config_update_ranks(candidate_config);
+
+					// Add the candidate point to the MTM if necessary
+					new_MTM_config = m_MTM.consider_config_MDR(candidate_config);
 
 					// Protect against going out of index range
 					if (i + 1 >= HJ_configs.size()) {
@@ -356,8 +361,7 @@ namespace TS {
 			// Update the move data
 			current_config.get_prev_move_data(prev_increase, prev_idx);
 			
-			// Add the current point to the MTM, STM and LTM
-			bool new_MTM_config = m_MTM.consider_config_MDR(current_config);
+			// Add the current point to the STM
 			m_STM.add_to_STM(current_config);
 			m_LTM.update_tally(current_config);
 
@@ -380,6 +384,12 @@ namespace TS {
 					AircraftEval::compute_f(next_config, m_sock, m_f_eval_num);
 					m_f_eval_num++;
 					next_config.initialize_ranks(m_dom_rels);
+					
+					// Add the canidate points to the All Point Memory (APM) and update its rank
+					m_APM.add_config_update_ranks(next_config);
+
+					// Add the point to the MTM
+					new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(current_config);
 
 					// Check whether this move dominates the current point
 					if (MDR::A_dominates_B_MDR(next_config.get_performances(),
@@ -391,13 +401,9 @@ namespace TS {
 						// Update the move data
 						current_config.get_prev_move_data(prev_increase, prev_idx);
 
-						// Add the current point to the MTM, STM and LTM
-						new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(current_config);
+						// Add the current point to the STM and LTM
 						m_STM.add_to_STM(current_config);
 						m_LTM.update_tally(current_config);
-
-						// Add the canidate points to the All Point Memory (APM) and update its rank
-						m_APM.add_config_update_ranks(current_config);
 					}
 				}
 			}
