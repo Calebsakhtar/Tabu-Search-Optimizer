@@ -63,7 +63,7 @@ namespace TS {
 			for (size_t i = 0; i < idx_to_erase.size(); i++) {
 
 				size_t erase_idx = idx_to_erase[idx_to_erase.size() - i - 1];
-				m_configs.erase(m_configs.begin() + i);
+				m_configs.erase(m_configs.begin() + erase_idx);
 			}
 		}
 		else {
@@ -104,7 +104,7 @@ namespace TS {
 			for (size_t i = 0; i < idx_to_erase.size(); i++) {
 
 				size_t erase_idx = idx_to_erase[idx_to_erase.size() - i - 1];
-				m_configs.erase(m_configs.begin() + i);
+				m_configs.erase(m_configs.begin() + erase_idx);
 			}
 		}
 		else {
