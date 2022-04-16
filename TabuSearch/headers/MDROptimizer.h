@@ -46,6 +46,10 @@ namespace TS {
 		// Store whether the optimization has run or not
 		bool m_optimized = false;
 
+		// Find all layers of the pareto front
+		bool find_pareto_front_layers(std::vector<std::vector<Config>>& 
+			op_vect) const;
+
 		// Print the performances of all visited points
 		bool print_configs(const std::vector<TS::Config>& configs, 
 			const std::string& filename) const;
