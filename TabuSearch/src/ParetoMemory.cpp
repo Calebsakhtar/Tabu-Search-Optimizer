@@ -36,14 +36,17 @@ namespace TS {
 		}
 	}
 
-	// Replace the oldest configurationw of the ParetoMemory with the new point visited if this
-	// new point dominates the configurations
+	// Replace the oldest configuration of the ParetoMemory with the new point visited if this
+	// new point dominates the configurations. Idea to erase in opposite order from:
+	// https://stackoverflow.com/questions/3487717/erasing-multiple-objects-from-a-stdvector
 	bool ParetoMemory::consider_config(const Config& new_config) {
-		
+
+		MDR::Design ip_design = new_config.get_performances();
+		std::vector<size_t> idx_to_erase;
+
 		for (size_t i = 0; i < m_configs.size(); i++) {
 			Config current_config = m_configs[i];
 			MDR::Design current_design = current_config.get_performances();
-			MDR::Design ip_design = new_config.get_performances();
 
 			// Check that no members of the ParetoMemory dominate the new config
 			if (MDR::A_dominates_B_2D(current_design, ip_design)) {
@@ -51,8 +54,20 @@ namespace TS {
 			}
 			else if (MDR::A_dominates_B_2D(ip_design, current_design)) {
 				// If the input dominates any of the existing designs, remove the existing design
+				idx_to_erase.push_back(i);
+			}
+		}
+
+		// Remove the required indexes in reverse order to preserve correct elements
+		if (idx_to_erase.size() > 0) {
+			for (size_t i = 0; i < idx_to_erase.size(); i++) {
+
+				size_t erase_idx = idx_to_erase[idx_to_erase.size() - i - 1];
 				m_configs.erase(m_configs.begin() + i);
 			}
+		}
+		else {
+			return false;
 		}
 
 		// Add the candidate design to the ParetoMemory
@@ -62,14 +77,17 @@ namespace TS {
 		return true;
 	}
 
-	// Replace the oldest configurationw of the ParetoMemory with the new point visited if this
-// new point dominates the configurations
+	// Replace the oldest configuration of the ParetoMemory with the new point visited if this
+	// new point dominates the configurations according to MDR. Idea to erase in opposite order from:
+	// https://stackoverflow.com/questions/3487717/erasing-multiple-objects-from-a-stdvector
 	bool ParetoMemory::consider_config_MDR(const Config& new_config) {
+
+		MDR::Design ip_design = new_config.get_performances();
+		std::vector<size_t> idx_to_erase;
 
 		for (size_t i = 0; i < m_configs.size(); i++) {
 			Config current_config = m_configs[i];
 			MDR::Design current_design = current_config.get_performances();
-			MDR::Design ip_design = new_config.get_performances();
 
 			// Check that no members of the ParetoMemory dominate the new config
 			if (MDR::A_dominates_B_MDR(current_design, ip_design, m_dom_rels)) {
@@ -77,8 +95,20 @@ namespace TS {
 			}
 			else if (MDR::A_dominates_B_MDR(ip_design, current_design, m_dom_rels)) {
 				// If the input dominates any of the existing designs, remove the existing design
+				idx_to_erase.push_back(i);
+			}
+		}
+
+		// Remove the required indexes in reverse order to preserve correct elements
+		if (idx_to_erase.size() > 0) {
+			for (size_t i = 0; i < idx_to_erase.size(); i++) {
+
+				size_t erase_idx = idx_to_erase[idx_to_erase.size() - i - 1];
 				m_configs.erase(m_configs.begin() + i);
 			}
+		}
+		else {
+			return false;
 		}
 
 		// Add the candidate design to the ParetoMemory
