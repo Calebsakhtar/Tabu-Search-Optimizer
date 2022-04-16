@@ -500,8 +500,21 @@ namespace TS {
 	}
 
 
-	//bool MDROptimizer::print_pareto_front_layers() const {
+	bool MDROptimizer::print_pareto_front_layers() const {
 
+		if (m_optimized) {
+			// Retrieve all visited points
+			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
-	//}
+			// Create and open a text file to store the performances of all the Visited Points
+			std::string filename = "AllPoints";
+
+			return print_configs(all_pts, filename);
+
+		}
+		else
+		{
+			return false;
+		}
+	}
 }
