@@ -6,6 +6,108 @@
 
 namespace TS {
 
+
+	// PRIVATE FUNCTIONS
+			
+	
+	// Print the performances
+	bool MDROptimizer::print_configs(const std::vector<TS::Config>& configs, 
+		const std::string& filename) const {
+
+		// Check input
+		if (configs.size() < 1) {
+			// Invalid input so return false
+			return false;
+		}
+
+
+
+		// PRINT THE PERFORMANCES 
+		
+
+
+		// Create the Performances File Location
+		std::string perf_fileloc = "Results/" + filename + "Perf.csv";
+
+		// Create and open a text file to store the performances of all the Visited Points
+		std::ofstream OpFilePerf(perf_fileloc);
+
+		size_t perf_size2 =
+			configs[0].get_performances().get_perf_vector().size();
+
+		OpFilePerf << "PointID";
+
+		for (size_t i = 0; i < perf_size2; i++) {
+			OpFilePerf << ",Objective" << std::to_string(i + 1);
+		}
+
+		OpFilePerf << "\n";
+
+		for (size_t i = 0; i < configs.size(); i++) {
+			std::vector<MDR::PerfMetric> current_perfs2 =
+				configs[i].get_performances().get_perf_vector();
+
+			OpFilePerf << std::to_string(i + 1) << ",";
+
+			for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
+				OpFilePerf << std::to_string(current_perfs2[j].get_metric_val()) << ",";
+			}
+
+			OpFilePerf << std::to_string(current_perfs2[current_perfs2.size() - 1].get_metric_val()) << "\n";
+		}
+
+		// Close the file
+		OpFilePerf.close();
+
+
+
+		// PRINT THE POINT LOCATIONS
+
+
+
+		// Create the Performances File Location
+		std::string locs_fileloc = "Results/" + filename + "Loc.csv";
+
+		// Create and open a text file to store the Coordinates of all the Visited Points
+		std::ofstream OpFileLoc(locs_fileloc);
+
+		auto vars_size =
+			configs[0].get_vars().size();
+
+		OpFileLoc << "PointID";
+
+		for (size_t i = 0; i < vars_size; i++) {
+			OpFileLoc << ",Variable" << std::to_string(i + 1);
+		}
+
+		OpFileLoc << "\n";
+
+		for (size_t i = 0; i < configs.size(); i++) {
+			std::vector<TS::Variable> current_vars =
+				configs[i].get_vars();
+
+			OpFileLoc << std::to_string(i + 1) << ",";
+
+			for (size_t j = 0; j < current_vars.size() - 1; j++) {
+				OpFileLoc << std::to_string(current_vars[j].get_val()) << ",";
+			}
+
+			OpFileLoc << std::to_string(current_vars[current_vars.size() - 1].get_val()) << "\n";
+		}
+
+		// Close the file
+		OpFileLoc.close();
+
+		// Return true (the operation was successful)
+		return true;
+	}
+
+
+
+	// PUBLIC FUNCTIONS
+
+
+
 	// Intended constructor for the Variable class
 	MDROptimizer::MDROptimizer(const std::vector<MDR::DomRel>& dom_rels, const size_t& STM_size,
 		const Config& initial_config, const double reduction_factor, const unsigned seed,
@@ -358,117 +460,24 @@ namespace TS {
 		m_optimized = true;
 	}
 
-	// Print the coordinates of all visited points
-	bool MDROptimizer::print_visited_pts_coords() const {
-
-		if (m_optimized) {
-			// Retrieve all visited points
-			std::vector<TS::Config> all_pts = retrieve_all_pts();
-
-			// Create and open a text file to store the Coordinates of all the Visited Points
-			std::ofstream OpFile("Results/PointCoords.csv");
-
-			if (all_pts.size() > 0) {
-
-				auto vars_size =
-					all_pts[0].get_vars().size();
-
-				OpFile << "PointID";
-
-				for (size_t i = 0; i < vars_size; i++) {
-					OpFile << ",Variable" << std::to_string(i + 1);
-				}
-
-				OpFile << "\n";
-
-				for (size_t i = 0; i < all_pts.size(); i++) {
-					std::vector<TS::Variable> current_vars =
-						all_pts[i].get_vars();
-
-					OpFile << std::to_string(i + 1) << ",";
-
-					for (size_t j = 0; j < current_vars.size() - 1; j++) {
-						OpFile << std::to_string(current_vars[j].get_val()) << ",";
-					}
-
-					OpFile << std::to_string(current_vars[current_vars.size() - 1].get_val()) << "\n";
-				}
-			}
-			else {
-				// Close the file
-				OpFile.close();
-
-				// Return false if the operation failed
-				return false;
-			}
-
-			// Close the file
-			OpFile.close();
-
-			// Return true (the operation was successful)
-			return true;
-		}
-		else {
-			// Return false if the optimization was not already performed
-			return false;
-		}
-	}
-
-	// Print the performances of all visited points
-	bool MDROptimizer::print_visited_pts() const {
+	// Print the performances and locations of all visited points
+	bool MDROptimizer::print_visited_pts_loc_perf() const {
 
 		if (m_optimized) {
 			// Retrieve all visited points
 			std::vector<TS::Config> all_pts = retrieve_all_pts();
 
 			// Create and open a text file to store the performances of all the Visited Points
-			std::ofstream OpFile("Results/AllPointsPerf.csv");
+			std::string filename = "AllPoints";
 
-			if (all_pts.size() > 0) {
+			return print_configs(all_pts, filename);
 
-				size_t perf_size2 =
-					all_pts[0].get_performances().get_perf_vector().size();
-
-				OpFile << "PointID";
-
-				for (size_t i = 0; i < perf_size2; i++) {
-					OpFile << ",Objective" << std::to_string(i + 1);
-				}
-
-				OpFile << "\n";
-
-				for (size_t i = 0; i < all_pts.size(); i++) {
-					std::vector<MDR::PerfMetric> current_perfs2 =
-						all_pts[i].get_performances().get_perf_vector();
-
-					OpFile << std::to_string(i + 1) << ",";
-
-					for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
-						OpFile << std::to_string(current_perfs2[j].get_metric_val()) << ",";
-					}
-
-					OpFile << std::to_string(current_perfs2[current_perfs2.size() - 1].get_metric_val()) << "\n";
-				}
-			}
-			else {
-				// Close the file
-				OpFile.close();
-
-				// Return false if the operation failed
-				return false;
-			}
-
-			// Close the file
-			OpFile.close();
-
-
-			// Return true (the operation was successful)
-			return true;
 		}
-		else {
-			// Return false if the optimization was not already performed
+		else
+		{
 			return false;
 		}
+
 	}
 
 	// Print the performances of all pareto front points
@@ -478,53 +487,21 @@ namespace TS {
 			// Recover the pareto front
 			std::vector<TS::Config> result_MTM = retreive_MTM();
 
-			// Create and open a text file to store the ParetoFront in
-			std::ofstream OpFile("Results/ParetoPoints.csv");
+			// Create and open a text file to store the performances of all the Visited Points
+			std::string filename = "ParetoFrontFinal";
 
-			if (result_MTM.size() > 0) {
+			return print_configs(result_MTM, filename);
 
-				size_t perf_size =
-					result_MTM[0].get_performances().get_perf_vector().size();
-
-				OpFile << "MTMID";
-
-				for (size_t i = 0; i < perf_size; i++) {
-					OpFile << ",Objective" << std::to_string(i + 1);
-				}
-
-				OpFile << "\n";
-
-				for (size_t i = 0; i < result_MTM.size(); i++) {
-					std::vector<MDR::PerfMetric> current_perfs =
-						result_MTM[i].get_performances().get_perf_vector();
-
-					OpFile << std::to_string(i + 1) << ",";
-
-					for (size_t j = 0; j < current_perfs.size() - 1; j++) {
-						OpFile << std::to_string(current_perfs[j].get_metric_val()) << ",";
-					}
-
-					OpFile << std::to_string(current_perfs[current_perfs.size() - 1].get_metric_val()) << "\n";
-				}
-			}
-			else {
-				// Close the file
-				OpFile.close();
-
-				// Return false if the operation failed
-				return false;
-			}
-
-			// Close the file
-			OpFile.close();
-
-			// Return true (the operation was successful)
-			return true;
 		}
-		else {
-			// Return false if the optimization was not already performed
+		else
+		{
 			return false;
 		}
 	}
 
+
+	//bool MDROptimizer::print_pareto_front_layers() const {
+
+
+	//}
 }

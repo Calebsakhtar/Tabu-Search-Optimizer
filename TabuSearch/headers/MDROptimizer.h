@@ -46,6 +46,10 @@ namespace TS {
 		// Store whether the optimization has run or not
 		bool m_optimized = false;
 
+		// Print the performances of all visited points
+		bool print_configs(const std::vector<TS::Config>& configs, 
+			const std::string& filename) const;
+
 	public:
 		// Default constructor (constructs an empty object)
 		MDROptimizer() {};
@@ -68,14 +72,14 @@ namespace TS {
 		// Retrieve all visited points
 		std::vector<Config> retrieve_all_pts() const { return m_APM.get_configs(); };
 
-		// Print the coordinates of all visited points
-		bool print_visited_pts_coords() const;
-
 		// Print the performances of all visited points
-		bool print_visited_pts() const;
+		bool print_visited_pts_loc_perf() const;
 
 		// Print the performances of all pareto front points
 		bool print_pareto_front() const;
+
+		// Print all of the pareto front layers
+		bool print_pareto_front_layers() const;
 
 	};
 
