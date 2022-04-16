@@ -85,7 +85,7 @@ int main()
     size_t INTENSIFY = 10;
     size_t DIVERSIFY = 15;
     size_t REDUCE = 25;
-    size_t max_eval_num = 100;
+    size_t max_eval_num = 2000;
     size_t HJ_num = 8;
 
     // Set up the simulation
