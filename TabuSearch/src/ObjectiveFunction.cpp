@@ -41,10 +41,6 @@ namespace AircraftEval {
 
         const char* ap_state_dref = "sim/cockpit/autopilot/autopilot_state"; // AP State
 
-        // pauseSim
-        pauseSim(sock, 1); // Sending 1 to pause	
-        sleep(5); // Pause for 5 seconds
-
         const char* ap_mode_dref = "sim/cockpit/autopilot/autopilot_mode"; // AP Mode
         float ap_mode_val = 2; // off=0, flight director=1, on=2
         sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
@@ -72,13 +68,6 @@ namespace AircraftEval {
 
         float ap_hdg2_val = 4; // wing level hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
-
-        // pauseSim
-        pauseSim(sock, 1); // Sending 1 to pause	
-        sleep(5); // Pause for 5 seconds
-
-        // Unpause
-        pauseSim(sock, 0); // Sending 0 to unpause
 	}
 
     void reset_sim(XPCSocket sock, const double& ip_h, const double& ip_TAS) {
@@ -136,7 +125,7 @@ namespace AircraftEval {
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(25); 
+        sleep(35); 
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
