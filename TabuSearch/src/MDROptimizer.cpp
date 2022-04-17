@@ -389,7 +389,7 @@ namespace TS {
 					m_APM.add_config_update_ranks(next_config);
 
 					// Add the point to the MTM
-					new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(current_config);
+					new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(next_config);
 
 					// Check whether this move dominates the current point
 					if (MDR::A_dominates_B_MDR(next_config.get_performances(),
