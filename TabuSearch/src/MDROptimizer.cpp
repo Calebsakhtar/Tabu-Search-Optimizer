@@ -174,6 +174,9 @@ namespace TS {
 		// Store the number of variables
 		size_t num_vars = current_config.get_vars().size();
 
+		// Store whether the previous function evaluation was successful
+		bool f_eval_success = true;
+
 		// Store the previous move data
 		bool prev_increase = true;
 		size_t prev_idx = 1e10;
@@ -230,12 +233,17 @@ namespace TS {
 
 			// If all new points are either Tabu or Unfeasible, diversify and reduce if necessary
 			if (HJ_configs.size() < 1) {
-				m_LTM.diversify(current_config, m_generator);
+				
+				f_eval_success = false;
+				
+				while (!f_eval_success){
+					m_LTM.diversify(current_config, m_generator);
 
-				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
-				m_f_eval_num++;
-				current_config.initialize_ranks(m_dom_rels);
+					// Compute the objective function
+					f_eval_success = AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
+					m_f_eval_num++;
+					current_config.initialize_ranks(m_dom_rels);
+				}
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config_MDR(current_config);
@@ -259,7 +267,7 @@ namespace TS {
 			}
 
 			// Store whether a new configuration has been added to the MTM
-			bool new_MTM_config;
+			bool new_MTM_config = false;
 
 			// Loop to figure out the best generated point
 			while (!move_on) {
@@ -440,12 +448,16 @@ namespace TS {
 			
 			}
 			else if (m_counter == m_DIVERSIFY) {
-				m_LTM.diversify(current_config, m_generator);
+				f_eval_success = false;
 
-				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
-				m_f_eval_num++;
-				current_config.initialize_ranks(m_dom_rels);
+				while (!f_eval_success) {
+					m_LTM.diversify(current_config, m_generator);
+
+					// Compute the objective function
+					f_eval_success = AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
+					m_f_eval_num++;
+					current_config.initialize_ranks(m_dom_rels);
+				}
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config_MDR(current_config);
