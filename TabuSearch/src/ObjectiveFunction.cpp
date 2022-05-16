@@ -269,8 +269,8 @@ namespace AircraftEval {
         const double Raymer_L_D_max = 16.43;
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
-        const double c_JA1 = 43.15; // MJ/kg
-        const double c_H2 = 142; // MJ/kg
+        const double c_JA1 = 43.15; // MJ/kg LCV
+        const double c_H2 = 142; // MJ/kg HCV
         const double emissions_per_kgJA1 = 3.16; // See https://www.offsetguide.org/understanding-carbon-offsets/air-travel-climate/climate-impacts-from-aviation/co2-emissions/
         const double eta_prop = 0.8;
 
@@ -362,8 +362,13 @@ namespace AircraftEval {
             read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
 
             if (read_violation) {
-                std::cout << "Read Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
-                break;
+                // Try again
+                read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+
+                if (read_violation) {
+                    std::cout << "Read Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                    break;
+                }
             }
 
             L_D = op_L / op_D;
@@ -381,9 +386,10 @@ namespace AircraftEval {
             op_TAS = 1e10;
             op_L_D = -1e10;
             op_groundrun = 1e10; // m
-            op_payfrac = 1e10;
+            op_payfrac = -1e10;
             op_NRG_paykm = 1e10; // MJ
             op_emmiss_paykm = 1e10; // Tons CO2
+            mass_total = 1e10;
         }
         else {
             if (mass_payload <= 1e-6) {
@@ -424,6 +430,16 @@ namespace AircraftEval {
         MDR::PerfMetric L_D_perf(L_D_id, -op_L_D, true);
         perf_vect.push_back(L_D_perf);
 
+        // Formally store the Total Energy
+        MDR::MetricID NRG_tot_id("Total Mission Energy (MJ)", 5);
+        MDR::PerfMetric NRG_tot_perf(L_D_id, -op_L_D, true);
+        perf_vect.push_back(NRG_tot_perf);
+
+        // Formally store the Number of Passengers
+        MDR::MetricID n_pass_id("-Number of Passengers", 6);
+        MDR::PerfMetric n_pass_perf(L_D_id, -op_L_D, true);
+        perf_vect.push_back(n_pass_perf);
+
         //// Formally store the ground run
         //MDR::MetricID grun_id("Ground Run (km)", 4);
         //MDR::PerfMetric grun_perf(grun_id, op_groundrun, true);
@@ -436,6 +452,10 @@ namespace AircraftEval {
         ip_config.set_performances(performances);
 
         write_current_aircraft_data(ip_config, num_f_evals);
+
+        if (mass_violation || volume_violation) {
+            return false;
+        }
 
         return true;
     }
