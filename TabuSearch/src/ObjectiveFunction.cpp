@@ -10,6 +10,18 @@ namespace AircraftEval {
     
     }
 
+    // Compare two variables
+    bool similar(const double& var1, const double& var2, const double& rel_tol) {
+
+        const double rel_delta = 2 * abs(var1 - var2) / (abs(var1) + abs(var2));
+
+        if (rel_delta < rel_tol) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
 	void init_simulator(XPCSocket sock) {
         // Set Location/Orientation (sendPOSI)
@@ -125,10 +137,11 @@ namespace AircraftEval {
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(35); 
+        sleep(45); 
     }
 
-    bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS) {
+    bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
+        double& op_h, double& op_vz) {
         
         int size = 1;
         int comm_status = 0;
@@ -148,10 +161,20 @@ namespace AircraftEval {
         comm_status += getDREF(sock, dref_thrust, &Thrust, &size);
         op_Thrust = static_cast<double>(Thrust);
 
-        float TAS = 1e10;
-        const char* dref_TAS = "sim/flightmodel/position/local_vx";
+        float TAS = 1e10; // m/s
+        const char* dref_TAS = "sim/flightmodel/position/local_vx"; 
         comm_status += getDREF(sock, dref_TAS, &TAS, &size);
         op_TAS = static_cast<double>(TAS);
+
+        float h = 1e10; // ft
+        const char* dref_h = "sim/cockpit2/gauges/indicators/altitude_ft_pilot";
+        comm_status += getDREF(sock, dref_h, &h, &size);
+        op_h = static_cast<double>(h) / 3.281; // m
+
+        float vz = 1e10; // m/s
+        const char* dref_vz = "sim/flightmodel/position/local_vz";
+        comm_status += getDREF(sock, dref_vz, &vz, &size);
+        op_vz = static_cast<double>(vz);
 
         // If reading data from X-Plane has failed, return false
         if (comm_status < 0) { return false; }
@@ -273,6 +296,8 @@ namespace AircraftEval {
         const double c_H2 = 142; // MJ/kg HCV
         const double emissions_per_kgJA1 = 3.16; // See https://www.offsetguide.org/understanding-carbon-offsets/air-travel-climate/climate-impacts-from-aviation/co2-emissions/
         const double eta_prop = 0.8;
+        const double cg_lim_aft = 0;
+        const double cg_lim_fwd = 0;
 
         // Initialize the variables that can be changed
         double L_D = 0.8 * Raymer_L_D_max;
@@ -291,6 +316,7 @@ namespace AircraftEval {
         bool mass_violation = false;
         bool volume_violation = false;
         bool read_violation = false;
+        bool ss_violation = false;
         bool cg_violation = false;
 
         // Calculate the ISA values
@@ -327,6 +353,8 @@ namespace AircraftEval {
         double op_emmiss_paykm = 1e10; // Tons CO2
         double op_num_pass = 1;
         double op_tank_l = 1e10;
+        double op_h = 0;
+        double op_vz = 1e10;
 
         // Perform one "Tuning" iteration, then evaluate
         for (size_t i = 0; i < 2; i++) {
@@ -339,10 +367,15 @@ namespace AircraftEval {
             AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
                 mass_nofuel, mass_payload, mass_JA1, op_num_pass, op_tank_l, mass_violation, volume_violation);
 
+            // Check for an appropriate kerosene mass
+            if (mass_JA1 > 5000) {
+                mass_violation = true;
+            }
 
+            // Check for mass and volume violations
             if (mass_violation || volume_violation) {
 
-                if (mass_violation) {
+                if (mass_violation || mass_JA1 > 5000) {
                     std::cout << "Mass Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
                 }
 
@@ -352,6 +385,8 @@ namespace AircraftEval {
 
                 break;
             }
+
+            // Check for CG violations
 
             // Write the load data to the ACF file
             PlaneMakerTools::set_weight_data(x_cg_nofuel, mass_nofuel, acf_filepath);
@@ -363,16 +398,26 @@ namespace AircraftEval {
             // Reset the simulator and let it run for a while to achieve steady-state
             reset_sim(sock, ip_h, TAS);
 
-            read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+            read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS, op_h, op_vz);
 
             if (read_violation) {
                 // Try again
-                read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS);
+                read_violation = not get_metrics(sock, op_L, op_D, op_Thrust, op_TAS, op_h, op_vz);
 
                 if (read_violation) {
                     std::cout << "Read Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
                     break;
                 }
+            }
+
+            // Check to see whether the aircraft is in steady state
+            ss_violation = !similar(abs(op_TAS),abs(TAS), 0.05);
+            ss_violation &= (op_vz > 0.26);
+            ss_violation &= !similar(abs(ip_h), abs(op_h), 0.05);
+
+            if (ss_violation) {
+                std::cout << "Steady-State Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                break;
             }
 
             L_D = op_L / op_D;
@@ -383,7 +428,7 @@ namespace AircraftEval {
         // Initialize the performance metric vector
         std::vector<MDR::PerfMetric> perf_vect;
 
-        if (mass_violation || volume_violation || read_violation) {
+        if (mass_violation || volume_violation || read_violation || ss_violation) {
             op_L = 1e10;
             op_D = 1e10;
             op_Thrust = 1e10;
@@ -477,7 +522,7 @@ namespace AircraftEval {
 
         write_current_aircraft_data(ip_config, num_f_evals);
 
-        if (mass_violation || volume_violation) {
+        if (mass_violation || volume_violation || ss_violation) {
             return false;
         }
 
