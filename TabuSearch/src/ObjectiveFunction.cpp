@@ -291,6 +291,7 @@ namespace AircraftEval {
         bool mass_violation = false;
         bool volume_violation = false;
         bool read_violation = false;
+        bool cg_violation = false;
 
         // Calculate the ISA values
         double ISA_T = 0;
@@ -322,7 +323,10 @@ namespace AircraftEval {
         double op_groundrun = 1e10; // m
         double op_payfrac = 1e10;
         double op_NRG_paykm = 1e10; // MJ
+        double op_NRG = 1e10; // MJ
         double op_emmiss_paykm = 1e10; // Tons CO2
+        double op_num_pass = 1;
+        double op_tank_l = 1e10;
 
         // Perform one "Tuning" iteration, then evaluate
         for (size_t i = 0; i < 2; i++) {
@@ -333,7 +337,7 @@ namespace AircraftEval {
 
             // Make the load computations
             AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
-                mass_nofuel, mass_payload, mass_JA1, mass_violation, volume_violation);
+                mass_nofuel, mass_payload, mass_JA1, op_num_pass, op_tank_l, mass_violation, volume_violation);
 
 
             if (mass_violation || volume_violation) {
@@ -393,10 +397,25 @@ namespace AircraftEval {
         }
         else {
             if (mass_payload <= 1e-6) {
+                op_NRG = 1e6;
                 op_NRG_paykm = 1e6;
             }
             else {
-                op_NRG_paykm = (mass_JA1 * c_JA1 + (w_fuel - mass_JA1) * c_H2) / (mass_payload * ip_range);
+                op_NRG = mass_JA1 * c_JA1 + (w_fuel - mass_JA1) * c_H2;
+                op_NRG_paykm = op_NRG / (mass_payload * ip_range);
+
+                if (op_NRG < 0 || op_L_D < 0 || op_payfrac < 0 || mass_total < 0) {
+                    op_L = 1e10;
+                    op_D = 1e10;
+                    op_Thrust = 1e10;
+                    op_TAS = 1e10;
+                    op_L_D = -1e10;
+                    op_groundrun = 1e10; // m
+                    op_payfrac = -1e10;
+                    op_NRG_paykm = 1e10; // MJ
+                    op_emmiss_paykm = 1e10; // Tons CO2
+                    mass_total = 1e10;
+                }
             }
             
             op_payfrac = mass_payload / mass_total;
@@ -432,13 +451,18 @@ namespace AircraftEval {
 
         // Formally store the Total Energy
         MDR::MetricID NRG_tot_id("Total Mission Energy (MJ)", 5);
-        MDR::PerfMetric NRG_tot_perf(L_D_id, -op_L_D, true);
+        MDR::PerfMetric NRG_tot_perf(NRG_tot_id, op_NRG, true);
         perf_vect.push_back(NRG_tot_perf);
 
         // Formally store the Number of Passengers
         MDR::MetricID n_pass_id("-Number of Passengers", 6);
-        MDR::PerfMetric n_pass_perf(L_D_id, -op_L_D, true);
+        MDR::PerfMetric n_pass_perf(n_pass_id, -op_num_pass, true);
         perf_vect.push_back(n_pass_perf);
+
+        // Formally store the Length of the H2 tank
+        MDR::MetricID l_H2_id("Length of Hydrogen Tank", 7);
+        MDR::PerfMetric l_H2_perf(l_H2_id, op_tank_l, true);
+        perf_vect.push_back(l_H2_perf);
 
         //// Formally store the ground run
         //MDR::MetricID grun_id("Ground Run (km)", 4);
