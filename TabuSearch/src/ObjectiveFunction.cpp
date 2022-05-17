@@ -106,6 +106,11 @@ namespace AircraftEval {
 
         sendPOSI(sock, POSI, 7, 0);
 
+        // Set simulation speed
+        const char* simspeed_dref = "sim/time/sim_speed"; // real DREF
+        float simspeed_val = 3;
+        sendDREF(sock, simspeed_dref, &simspeed_val, 1); // Send data
+
         const char* reload_comm = "sim/operation/reload_aircraft_no_art";
         sendCOMM(sock, reload_comm);
 
@@ -119,8 +124,8 @@ namespace AircraftEval {
         sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
 
         const char* ap_airspeed_dref = "sim/cockpit/autopilot/airspeed";
-        double IAS = AircraftModel::TAS_to_IAS(ip_TAS, ip_h / 1000);
-        float ap_airspeed_val = static_cast<float>(IAS); // IAS, m/s
+        double IAS = AircraftModel::TAS_to_IAS(ip_TAS, ip_h); // m/s
+        float ap_airspeed_val = static_cast<float>(IAS) * 1.94384; // IAS, knots
         sendDREF(sock, ap_airspeed_dref, &ap_airspeed_val, 1); // Send data
 
         // Convert the height to feet
@@ -137,7 +142,7 @@ namespace AircraftEval {
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
         // Simulate for 7 seconds
-        sleep(45); 
+        sleep(40); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
