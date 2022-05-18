@@ -297,6 +297,7 @@ namespace AircraftEval {
         const double x_H2_tanks = 12.202; // m
         const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV)
         const double c_H2 = 121.1; // MJ/kg (specific energy)
+        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey
         const double emissions_per_kgJA1 = 3.16; // See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
         const double eta_prop = 0.8;
 
@@ -313,6 +314,7 @@ namespace AircraftEval {
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
         double mass_JA1 = 0; // kg
+        double mass_H2_net = 0; //kg
         double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
@@ -367,7 +369,8 @@ namespace AircraftEval {
 
             // Make the load computations
             AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
-                mass_nofuel, mass_payload, mass_JA1, op_num_pass, op_tank_l, mass_violation, volume_violation);
+                mass_nofuel, mass_payload, mass_JA1, mass_H2_net, op_num_pass, op_tank_l, mass_violation, 
+                volume_violation);
 
             // Check for an appropriate kerosene mass
             if (mass_JA1 > 5000) {
@@ -474,7 +477,7 @@ namespace AircraftEval {
             
             op_payfrac = mass_payload / mass_total;
 
-            op_emmiss = mass_JA1 * emissions_per_kgJA1;
+            op_emmiss = mass_JA1 * emissions_per_kgJA1 + mass_H2_net * emissions_per_kgH2;
             op_emmiss_paykm = op_emmiss / (mass_payload * ip_range);
             op_emmiss_paxkm = op_emmiss / (op_num_pass * ip_range);
 
@@ -539,6 +542,11 @@ namespace AircraftEval {
         MDR::PerfMetric l_H2_perf(l_H2_id, op_tank_l, true);
         perf_vect.push_back(l_H2_perf);
 
+        // Formally store the Total Mass of Hydrogen Carried
+        MDR::MetricID M_H2_id("Mass of Hydrogen Carried (kg)", 11);
+        MDR::PerfMetric M_H2_perf(M_H2_id, mass_H2_net, true);
+        perf_vect.push_back(M_H2_perf);
+
         // Set the performances to the input configuration
         size_t zero = 0;
         size_t one = 1;
@@ -579,7 +587,8 @@ namespace AircraftEval {
         const double x_H2_tanks = 12.202; // m
         const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV)
         const double c_H2 = 121.1; // MJ/kg (specific energy)
-        const double emissions_per_kgJA1 = 3.16; // See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
+        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey
+        const double emissions_per_kgJA1 = 3.16;// See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
         const double eta_prop = 0.8;
 
         // Initialize the variables that can be changed
@@ -595,6 +604,7 @@ namespace AircraftEval {
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
         double mass_JA1 = 0; // kg
+        double mass_H2_net = 0; //kg
         double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
@@ -643,7 +653,8 @@ namespace AircraftEval {
 
             // Make the load computations
             AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
-                mass_nofuel, mass_payload, mass_JA1, op_num_pass, op_tank_l, mass_violation, volume_violation);
+                mass_nofuel, mass_payload, mass_JA1, mass_H2_net, op_num_pass, op_tank_l, mass_violation, 
+                volume_violation);
 
             // Check for an appropriate kerosene mass
             if (mass_JA1 > 5000) {
@@ -714,7 +725,7 @@ namespace AircraftEval {
 
             op_payfrac = mass_payload / mass_total;
 
-            op_emmiss = mass_JA1 * emissions_per_kgJA1;
+            op_emmiss = mass_JA1 * emissions_per_kgJA1 + mass_H2_net * emissions_per_kgH2;
             op_emmiss_paykm = op_emmiss / (mass_payload * ip_range);
             op_emmiss_paxkm = op_emmiss / (op_num_pass * ip_range);
 
@@ -779,9 +790,9 @@ namespace AircraftEval {
         MDR::PerfMetric l_H2_perf(l_H2_id, op_tank_l, true);
         perf_vect.push_back(l_H2_perf);
 
-        // Formally store the Mass of Hydrogen Carried
-        MDR::MetricID M_H2_id("Mass of Hydrogen Carried (kg)", 10);
-        MDR::PerfMetric M_H2_perf(M_H2_id, op_tank_l, true);
+        // Formally store the Total Mass of Hydrogen Carried
+        MDR::MetricID M_H2_id("Mass of Hydrogen Carried (kg)", 11);
+        MDR::PerfMetric M_H2_perf(M_H2_id, mass_H2_net, true);
         perf_vect.push_back(M_H2_perf);
 
         // Set the performances to the input configuration
