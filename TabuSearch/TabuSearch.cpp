@@ -114,6 +114,7 @@ void passnum_test() {
         double op_calc_mass_nofuel = 1e10;
         double op_payload = 1e10;
         double op_M_JA1 = 1e10; // m
+        double op_M_H2 = 1e10; // m
         int op_num_pass = 1e10;
         double op_tank_l = 1e10;
         bool op_vio_mass = false;
@@ -126,7 +127,7 @@ void passnum_test() {
         double w_fuel = 22000. * (1. - 1. / w_ratio);
 
         AircraftModel::compute_cg_loc_mass(480, w_fuel, ip_H2_frac, op_cg_loc, op_calc_mass, op_cg_loc_nofuel,
-            op_calc_mass_nofuel, op_payload, op_M_JA1, op_num_pass, op_tank_l, op_vio_mass, op_vio_vol);
+            op_calc_mass_nofuel, op_payload, op_M_JA1, op_M_H2, op_num_pass, op_tank_l, op_vio_mass, op_vio_vol);
 
         std::cout << ip_H2_frac << " - " << op_num_pass << "\n";
     }
