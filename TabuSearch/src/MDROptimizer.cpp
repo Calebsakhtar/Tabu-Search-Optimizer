@@ -28,7 +28,7 @@ namespace TS {
 
 
 		// Create the Performances File Location
-		std::string perf_fileloc = "Results/" + filename + "Perf.csv";
+		std::string perf_fileloc = "Results/" + filename + "Performance.csv";
 
 		// Create and open a text file to store the performances of all the Visited Points
 		std::ofstream OpFilePerf(perf_fileloc);
@@ -39,7 +39,7 @@ namespace TS {
 		OpFilePerf << "PointID";
 
 		for (size_t i = 0; i < perf_size2; i++) {
-			OpFilePerf << ",Objective" << std::to_string(i + 1);
+			OpFilePerf << ",Objective" << std::to_string(i);
 		}
 
 		OpFilePerf << "\n";
@@ -48,7 +48,7 @@ namespace TS {
 			std::vector<MDR::PerfMetric> current_perfs2 =
 				configs[i].get_performances().get_perf_vector();
 
-			OpFilePerf << std::to_string(i + 1) << ",";
+			OpFilePerf << std::to_string(i) << ",";
 
 			for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
 				OpFilePerf << std::to_string(current_perfs2[j].get_metric_val()) << ",";
@@ -67,7 +67,7 @@ namespace TS {
 
 
 		// Create the Performances File Location
-		std::string locs_fileloc = "Results/" + filename + "Loc.csv";
+		std::string locs_fileloc = "Results/" + filename + "Vector.csv";
 
 		// Create and open a text file to store the Coordinates of all the Visited Points
 		std::ofstream OpFileLoc(locs_fileloc);
@@ -78,7 +78,7 @@ namespace TS {
 		OpFileLoc << "PointID";
 
 		for (size_t i = 0; i < vars_size; i++) {
-			OpFileLoc << ",Variable" << std::to_string(i + 1);
+			OpFileLoc << ",Variable" << std::to_string(i);
 		}
 
 		OpFileLoc << "\n";
@@ -87,7 +87,7 @@ namespace TS {
 			std::vector<TS::Variable> current_vars =
 				configs[i].get_vars();
 
-			OpFileLoc << std::to_string(i + 1) << ",";
+			OpFileLoc << std::to_string(i) << ",";
 
 			for (size_t j = 0; j < current_vars.size() - 1; j++) {
 				OpFileLoc << std::to_string(current_vars[j].get_val()) << ",";
