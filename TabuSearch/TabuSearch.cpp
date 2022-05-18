@@ -11,29 +11,132 @@
 #include "headers/MDR-TS.h"
 #include "headers/XPlaneConnect.h"
 
+// Print the performances
+bool printconfigs(const std::vector<TS::Config>& configs, const std::string& filename) {
+
+    // Check input
+    if (configs.size() < 1) {
+        // Invalid input so return false
+        return false;
+    }
+
+
+
+    // PRINT THE PERFORMANCES 
+
+
+
+    // Create the Performances File Location
+    std::string perf_fileloc = "Results/" + filename + "Performance.csv";
+
+    // Create and open a text file to store the performances of all the Visited Points
+    std::ofstream OpFilePerf(perf_fileloc);
+
+    size_t perf_size2 =
+        configs[0].get_performances().get_perf_vector().size();
+
+    OpFilePerf << "PointID";
+
+    for (size_t i = 0; i < perf_size2; i++) {
+        OpFilePerf << ",Objective" << std::to_string(i);
+    }
+
+    OpFilePerf << "\n";
+
+    for (size_t i = 0; i < configs.size(); i++) {
+        std::vector<MDR::PerfMetric> current_perfs2 =
+            configs[i].get_performances().get_perf_vector();
+
+        OpFilePerf << std::to_string(i) << ",";
+
+        for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
+            OpFilePerf << std::to_string(current_perfs2[j].get_metric_val()) << ",";
+        }
+
+        OpFilePerf << std::to_string(current_perfs2[current_perfs2.size() - 1].get_metric_val()) << "\n";
+    }
+
+    // Close the file
+    OpFilePerf.close();
+
+
+
+    // PRINT THE POINT LOCATIONS
+
+
+
+    // Create the Performances File Location
+    std::string locs_fileloc = "Results/" + filename + "Vector.csv";
+
+    // Create and open a text file to store the Coordinates of all the Visited Points
+    std::ofstream OpFileLoc(locs_fileloc);
+
+    auto vars_size =
+        configs[0].get_vars().size();
+
+    OpFileLoc << "PointID";
+
+    for (size_t i = 0; i < vars_size; i++) {
+        OpFileLoc << ",Variable" << std::to_string(i);
+    }
+
+    OpFileLoc << "\n";
+
+    for (size_t i = 0; i < configs.size(); i++) {
+        std::vector<TS::Variable> current_vars =
+            configs[i].get_vars();
+
+        OpFileLoc << std::to_string(i) << ",";
+
+        for (size_t j = 0; j < current_vars.size() - 1; j++) {
+            OpFileLoc << std::to_string(current_vars[j].get_val()) << ",";
+        }
+
+        OpFileLoc << std::to_string(current_vars[current_vars.size() - 1].get_val()) << "\n";
+    }
+
+    // Close the file
+    OpFileLoc.close();
+
+    // Return true (the operation was successful)
+    return true;
+}
+
+void passnum_test() {
+    size_t n = 100;
+
+    for (size_t i = 0; i < n + 1; i++) {
+        double ip_H2_frac = 1. / static_cast<double>(n) * static_cast<double>(i);
+
+        double op_cg_loc = 1e10;
+        double op_calc_mass = 1e10;
+        double op_cg_loc_nofuel = 1e10;
+        double op_calc_mass_nofuel = 1e10;
+        double op_payload = 1e10;
+        double op_M_JA1 = 1e10; // m
+        int op_num_pass = 1e10;
+        double op_tank_l = 1e10;
+        bool op_vio_mass = false;
+        bool op_vio_vol = false;
+
+        // Calculate the hybrid BSFC
+        double BSFC_hybrid_cruise = AircraftModel::calculate_hybrid_BSFC(ip_H2_frac, 6.1, 2050);
+
+        double w_ratio = AircraftModel::breguet_prop_wratio(0.8, BSFC_hybrid_cruise, 15, 1400 * 1000);
+        double w_fuel = 22000. * (1. - 1. / w_ratio);
+
+        AircraftModel::compute_cg_loc_mass(480, w_fuel, ip_H2_frac, op_cg_loc, op_calc_mass, op_cg_loc_nofuel,
+            op_calc_mass_nofuel, op_payload, op_M_JA1, op_num_pass, op_tank_l, op_vio_mass, op_vio_vol);
+
+        std::cout << ip_H2_frac << " - " << op_num_pass << "\n";
+    }
+}
+
+
 int main()
 {
+
     const bool TS = false;
-
-    // Set up the simulation
-    printf("Setting up Simulation\n");
-
-    // Open Socket
-    const char* IP = "192.168.0.93";//"192.168.1.150";     //IP Address of computer running X-Plane
-    XPCSocket sock = openUDP(IP);
-    float tVal[1];
-    int tSize = 1;
-    if (getDREF(sock, "sim/test/test_float", tVal, &tSize) < 0)
-    {
-        printf("Error establishing connection. Unable to read data from X-Plane.");
-        return EXIT_FAILURE;
-    }
-    else {
-        printf("Initial connection successful.\n");
-    }
-
-    // Initialize the vector containing the variables
-    std::vector<TS::Variable> vars;
 
     // Create a variable for the range
     std::array<double, 2> feas_reg_range = { 500, 2800 };
@@ -74,6 +177,10 @@ int main()
     TS::Variable var_M(false, feas_regs_M, stepsize_min_M, start_M, stepsize_M, name_M);
 
     if (TS) {
+
+        // Initialize the vector containing the variables
+        std::vector<TS::Variable> vars;
+
         // Create a variable for the Hydrogen power fraction
         std::array<double, 2> feas_reg_H2_Pfrac = { 0, 1 };
         std::vector<std::array<double, 2>> feas_regs_H2_Pfrac = { feas_reg_H2_Pfrac };
@@ -84,11 +191,11 @@ int main()
         TS::Variable var_H2_Pfrac(false, feas_regs_H2_Pfrac, stepsize_min_H2_Pfrac, start_H2_Pfrac,
             stepsize_H2_Pfrac, name_H2_Pfrac);
         
-        vars.push_back(var_H2_Pfrac);
         vars.push_back(var_range);
         vars.push_back(var_Pmax);
         vars.push_back(var_h);
         vars.push_back(var_M);
+        vars.push_back(var_H2_Pfrac);
 
         // Make the initial point from the variables
         TS::Config initial_point(vars);
@@ -109,6 +216,23 @@ int main()
         size_t max_eval_num = 300;
         size_t HJ_num = 8;
 
+        // Set up the simulation
+        printf("Setting up Simulation\n");
+
+        // Open Socket
+        const char* IP = "192.168.0.93";//"192.168.1.150";     //IP Address of computer running X-Plane
+        XPCSocket sock = openUDP(IP);
+        float tVal[1];
+        int tSize = 1;
+        if (getDREF(sock, "sim/test/test_float", tVal, &tSize) < 0)
+        {
+            printf("Error establishing connection. Unable to read data from X-Plane.");
+            return EXIT_FAILURE;
+        }
+        else {
+            printf("Initial connection successful.\n");
+        }
+
         // Instantiate the Optimizer object
         TS::MDROptimizer Optimizer(dom_rels, STM_size, initial_point, reduction_factor, seed, sock, INTENSIFY,
             DIVERSIFY, REDUCE, max_eval_num, HJ_num);
@@ -125,9 +249,14 @@ int main()
     }
     else {
 
-        const size_t n = 100;
+        const size_t n = 1000;
+        std::vector<TS::Config> configs;
 
         for (size_t i = 0; i < n+1; i++) {
+
+            // Initialize the vector containing the variables
+            std::vector<TS::Variable> vars;
+
             // Create a variable for the Hydrogen power fraction
             std::array<double, 2> feas_reg_H2_Pfrac = { 0, 1 };
             std::vector<std::array<double, 2>> feas_regs_H2_Pfrac = { feas_reg_H2_Pfrac };
@@ -138,17 +267,23 @@ int main()
             TS::Variable var_H2_Pfrac(false, feas_regs_H2_Pfrac, stepsize_min_H2_Pfrac, start_H2_Pfrac,
                 stepsize_H2_Pfrac, name_H2_Pfrac);
 
-            vars.push_back(var_H2_Pfrac);
             vars.push_back(var_range);
             vars.push_back(var_Pmax);
             vars.push_back(var_h);
             vars.push_back(var_M);
+            vars.push_back(var_H2_Pfrac);
 
             // Make the initial point from the variables
             TS::Config initial_point(vars);
 
-            AircraftEval::compute_f(initial_point, sock, i);
+            AircraftEval::compute_f_nosim(initial_point, i);
+
+            // Keep track of the points visited
+            configs.push_back(initial_point);
         }
+
+        std::string filename = "AllPoints";
+        printconfigs(configs, filename);
     }
 	
     // Mark the end of the program
