@@ -13,7 +13,7 @@ namespace AircraftEval {
     // Compare two variables
     bool similar(const double& var1, const double& var2, const double& rel_tol) {
 
-        const double rel_delta = 2 * abs(var1 - var2) / (abs(var1) + abs(var2));
+        const double rel_delta = 2. * abs(var1 - var2) / (abs(var1) + abs(var2));
 
         if (rel_delta < rel_tol) {
             return true;
@@ -40,7 +40,7 @@ namespace AircraftEval {
 
         // Set simulation speed
         const char* simspeed_dref = "sim/time/sim_speed"; // real DREF
-        float simspeed_val = 3;
+        float simspeed_val = 3.;
         sendDREF(sock, simspeed_dref, &simspeed_val, 1); // Send data
 
         const char* speed_dref = "sim/flightmodel/position/local_vx"; // real DREF
@@ -48,7 +48,7 @@ namespace AircraftEval {
         sendDREF(sock, speed_dref, &speed_val, 1); // Send data
 
         const char* ap_off_dref = "sim/cockpit/autopilot/autopilot_mode"; // AP Mode
-        float ap_off_val = 0; // off=0, flight director=1, on=2
+        float ap_off_val = 0.; // off=0, flight director=1, on=2
         sendDREF(sock, ap_off_dref, &ap_off_val, 1); // Send data
 
         const char* ap_state_dref = "sim/cockpit/autopilot/autopilot_state"; // AP State
@@ -152,12 +152,12 @@ namespace AircraftEval {
         int comm_status = 0;
 
         float Lift = 1e10;
-        const char* dref_lift = "sim/flightmodel/forces/lift_path_axis"; //fnrml_aero
+        const char* dref_lift = "sim/flightmodel/forces/lift_path_axis"; //fnrml_aero, N
         comm_status += getDREF(sock, dref_lift, &Lift, &size);
         op_L = static_cast<double>(Lift);
 
         float Drag = 1e10;
-        const char* dref_drag = "sim/flightmodel/forces/drag_path_axis"; // faxil_aero
+        const char* dref_drag = "sim/flightmodel/forces/drag_path_axis"; // faxil_aero, N
         comm_status += getDREF(sock, dref_drag, &Drag, &size);
         op_D = static_cast<double>(Drag);
 
@@ -279,7 +279,7 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_H2_Pfrac = variables[0].get_val();
+        const double ip_H2_Pfrac =  variables[0].get_val();
         const double ip_range = variables[1].get_val(); // 1400 km
         const double ip_P_max = variables[2].get_val(); // 2050 kW
         const double ip_h = variables[3].get_val(); // 6.096 km
@@ -293,16 +293,14 @@ namespace AircraftEval {
             "C:\\CalebData\\Games\\X-Plane 11\\Aircraft\\Extra Aircraft\\ATR72-500\\ATR72.acf";
 
         // Initialize the true aircraft constants
-        const double MTOW = 22800; // kg
+        const double MTOW = 22000; // kg
         const double Raymer_L_D_max = 16.43;
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
-        const double c_JA1 = 43.15; // MJ/kg LCV
-        const double c_H2 = 142; // MJ/kg HCV
-        const double emissions_per_kgJA1 = 3.16; // See https://www.offsetguide.org/understanding-carbon-offsets/air-travel-climate/climate-impacts-from-aviation/co2-emissions/
+        const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV)
+        const double c_H2 = 121.1; // MJ/kg (specific energy)
+        const double emissions_per_kgJA1 = 3.16; // See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
         const double eta_prop = 0.8;
-        const double cg_lim_aft = 0;
-        const double cg_lim_fwd = 0;
 
         // Initialize the variables that can be changed
         double L_D = 0.8 * Raymer_L_D_max;
@@ -351,12 +349,14 @@ namespace AircraftEval {
         double op_Thrust = 1e10;
         double op_TAS = 1e10;
         double op_L_D = 1e10;
-        double op_groundrun = 1e10; // m
         double op_payfrac = 1e10;
-        double op_NRG_paykm = 1e10; // MJ
         double op_NRG = 1e10; // MJ
-        double op_emmiss_paykm = 1e10; // Tons CO2
-        double op_num_pass = 1;
+        double op_NRG_paykm = 1e10; 
+        double op_NRG_paxkm = 1e10;
+        double op_emmiss = 1e10; // Tons CO2
+        double op_emmiss_paykm = 1e10;
+        double op_emmiss_paxkm = 1e10;
+        int op_num_pass = 1;
         double op_tank_l = 1e10;
         double op_h = 0;
         double op_vz = 1e10;
@@ -365,7 +365,7 @@ namespace AircraftEval {
         for (size_t i = 0; i < 2; i++) {
             // Calculate the fuel weight
             w_ratio = AircraftModel::breguet_prop_wratio(eta_prop, BSFC_hybrid_cruise, L_D, ip_range * 1000);
-            w_fuel = mass_total * (1 - 1 / w_ratio);
+            w_fuel = mass_total * (1. - 1. / w_ratio);
 
 
             // Make the load computations
@@ -439,11 +439,15 @@ namespace AircraftEval {
             op_Thrust = 1e10;
             op_TAS = 1e10;
             op_L_D = -1e10;
-            op_groundrun = 1e10; // m
             op_payfrac = -1e10;
-            op_NRG_paykm = 1e10; // MJ
-            op_emmiss_paykm = 1e10; // Tons CO2
             mass_total = 1e10;
+            op_NRG = 1e10; // MJ
+            op_NRG_paykm = 1e10;
+            op_NRG_paxkm = 1e10;
+            op_emmiss = 1e10; // Tons CO2
+            op_emmiss_paykm = 1e10;
+            op_emmiss_paxkm = 1e10;
+            op_num_pass = 1;
         }
         else {
             if (mass_payload <= 1e-6) {
@@ -452,7 +456,6 @@ namespace AircraftEval {
             }
             else {
                 op_NRG = mass_JA1 * c_JA1 + (w_fuel - mass_JA1) * c_H2;
-                op_NRG_paykm = op_NRG / (mass_payload * ip_range);
 
                 if (op_NRG < 0 || op_L_D < 0 || op_payfrac < 0 || mass_total < 0) {
                     op_L = 1e10;
@@ -460,64 +463,84 @@ namespace AircraftEval {
                     op_Thrust = 1e10;
                     op_TAS = 1e10;
                     op_L_D = -1e10;
-                    op_groundrun = 1e10; // m
                     op_payfrac = -1e10;
-                    op_NRG_paykm = 1e10; // MJ
-                    op_emmiss_paykm = 1e10; // Tons CO2
                     mass_total = 1e10;
+                    op_NRG = 1e10; // MJ
+                    op_NRG_paykm = 1e10;
+                    op_NRG_paxkm = 1e10;
+                    op_emmiss = 1e10; // Tons CO2
+                    op_emmiss_paykm = 1e10;
+                    op_emmiss_paxkm = 1e10;
+                    op_num_pass = 1;
                 }
             }
             
             op_payfrac = mass_payload / mass_total;
-            op_emmiss_paykm = mass_JA1 * emissions_per_kgJA1 / (mass_payload * ip_range);
+
+            op_emmiss = mass_JA1 * emissions_per_kgJA1;
+            op_emmiss_paykm = op_emmiss / (mass_payload * ip_range);
+            op_emmiss_paxkm = op_emmiss / (op_num_pass * ip_range);
+
+            op_NRG_paykm = op_NRG / (mass_payload * ip_range);
+            op_NRG_paxkm = op_NRG / (op_num_pass * ip_range);
+
             op_L_D = L_D;
-            //op_groundrun = 2; // AircraftModel::compute_ground_run_raymer(mass_total, S_wing, 1, 1, ip_P_max * kW_to_HP);
         }
         
-        // Formally store the mission energy per payload km
-        MDR::MetricID NRG_id("NRG (kJ/cargokm)", 0);
-        MDR::PerfMetric NRG_perf(NRG_id, 1e3*op_NRG_paykm, true);
+        // Formally store the mission energy
+        MDR::MetricID NRG_id("NRG (MJ)", 0);
+        MDR::PerfMetric NRG_perf(NRG_id, op_NRG, true);
         perf_vect.push_back(NRG_perf);
 
+        // Formally store the mission energy per payload km
+        MDR::MetricID NRG_cargo_id("NRG (kJ/cargokm)", 1);
+        MDR::PerfMetric NRG_cargo_perf(NRG_cargo_id, 1e3 * op_NRG_paykm, true);
+        perf_vect.push_back(NRG_cargo_perf);
+
+        // Formally store the mission energy per passenger km
+        MDR::MetricID NRG_pax_id("NRG (MJ/paxkm)", 2);
+        MDR::PerfMetric NRG_pax_perf(NRG_pax_id, op_NRG_paxkm, true);
+        perf_vect.push_back(NRG_pax_perf);
+
         // Formally store the payload fraction
-        MDR::MetricID payfrac_id("-Payload Fraction", 1);
+        MDR::MetricID payfrac_id("-Payload Fraction", 3);
         MDR::PerfMetric payfrac_perf(payfrac_id, -op_payfrac, true);
         perf_vect.push_back(payfrac_perf);
 
         // Formally store the total mass
-        MDR::MetricID totalm_id("Total Mass (kg)", 2);
+        MDR::MetricID totalm_id("Total Mass (kg)", 4);
         MDR::PerfMetric totalm_perf(totalm_id, mass_total, true);
         perf_vect.push_back(totalm_perf);
 
         // Formally store the in-flight emissions per payload km
-        MDR::MetricID emms_id("Emmissions (kgCO2/cargokm)", 3);
-        MDR::PerfMetric emms_perf(emms_id, op_emmiss_paykm, true);
+        MDR::MetricID emms_id("Emmissions (kg CO2)", 5);
+        MDR::PerfMetric emms_perf(emms_id, op_emmiss, true);
         perf_vect.push_back(emms_perf);
+        
+        // Formally store the in-flight emissions per payload km
+        MDR::MetricID emms_cargo_id("Emmissions (gCO2/cargokm)", 6);
+        MDR::PerfMetric emms_cargo_perf(emms_cargo_id, op_emmiss_paykm*1000., true);
+        perf_vect.push_back(emms_cargo_perf);
+        
+        // Formally store the in-flight emissions per payload km
+        MDR::MetricID emms_pax_id("Emmissions (kgCO2/paxkm)", 7);
+        MDR::PerfMetric emms_pax_perf(emms_pax_id, op_emmiss_paxkm, true);
+        perf_vect.push_back(emms_pax_perf);
 
         // Formally store the Lift Over Drag
-        MDR::MetricID L_D_id("-L_D", 4);
+        MDR::MetricID L_D_id("-L_D", 8);
         MDR::PerfMetric L_D_perf(L_D_id, -op_L_D, true);
         perf_vect.push_back(L_D_perf);
 
-        // Formally store the Total Energy
-        MDR::MetricID NRG_tot_id("Total Mission Energy (MJ)", 5);
-        MDR::PerfMetric NRG_tot_perf(NRG_tot_id, op_NRG, true);
-        perf_vect.push_back(NRG_tot_perf);
-
         // Formally store the Number of Passengers
-        MDR::MetricID n_pass_id("-Number of Passengers", 6);
+        MDR::MetricID n_pass_id("-Number of Passengers", 9);
         MDR::PerfMetric n_pass_perf(n_pass_id, -op_num_pass, true);
         perf_vect.push_back(n_pass_perf);
 
         // Formally store the Length of the H2 tank
-        MDR::MetricID l_H2_id("Length of Hydrogen Tank", 7);
+        MDR::MetricID l_H2_id("Length of Hydrogen Tank", 10);
         MDR::PerfMetric l_H2_perf(l_H2_id, op_tank_l, true);
         perf_vect.push_back(l_H2_perf);
-
-        //// Formally store the ground run
-        //MDR::MetricID grun_id("Ground Run (km)", 4);
-        //MDR::PerfMetric grun_perf(grun_id, op_groundrun, true);
-        //perf_vect.push_back(grun_perf);
 
         // Set the performances to the input configuration
         size_t zero = 0;
