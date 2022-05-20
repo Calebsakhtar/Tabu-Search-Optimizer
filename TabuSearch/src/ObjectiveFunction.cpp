@@ -641,7 +641,7 @@ namespace AircraftEval {
         double op_emmiss_paxkm = 1e10;
         int op_num_pass = 1;
         double op_tank_l = 1e10;
-        double op_h = 0;
+        double op_h = 0.;
         double op_vz = 1e10;
 
         // Perform one "Tuning" iteration, then evaluate

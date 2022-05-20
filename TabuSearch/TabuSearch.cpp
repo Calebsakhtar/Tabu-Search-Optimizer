@@ -202,10 +202,10 @@ int main()
         TS::Config initial_point(vars);
 
         // Specify the MDR Layers of Dominance
-        MDR::DomRel first_layer(0, 1); // 3, 4
-        MDR::DomRel second_layer(3, 6); // 0, 4
-        MDR::DomRel third_layer(4, 4); // 1, 2
-        std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer }; //{ first_layer, second_layer, third_layer }
+        MDR::DomRel first_layer(7, 3); // 3, 4
+        MDR::DomRel second_layer(2, 8); // 0, 4
+        MDR::DomRel third_layer(9, 2); // 1, 2
+        std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer, third_layer}; //{ first_layer, second_layer, third_layer }
 
         // Specify the TS Parameters
         size_t STM_size = 7;
@@ -261,7 +261,7 @@ int main()
             // Create a variable for the Hydrogen power fraction
             std::array<double, 2> feas_reg_H2_Pfrac = { 0, 1 };
             std::vector<std::array<double, 2>> feas_regs_H2_Pfrac = { feas_reg_H2_Pfrac };
-            const double start_H2_Pfrac = static_cast<double>(i) * 1. / static_cast<double>(n);
+            const double start_H2_Pfrac = 1;// static_cast<double>(i) * 1. / static_cast<double>(n);
             const double stepsize_H2_Pfrac = 0.4;
             const double stepsize_min_H2_Pfrac = 0.05;
             const std::string name_H2_Pfrac = "Hydrogen Power Fraction";
