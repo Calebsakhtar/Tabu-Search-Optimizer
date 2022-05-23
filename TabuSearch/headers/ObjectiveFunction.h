@@ -21,6 +21,11 @@ namespace AircraftEval {
 	// Given an input configuration, evaluate its performance and
 	// update the configuration with the performance metrics
 	bool compute_f(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals = 0);
+
+	// Given an input configuration, evaluate its performance and
+	// update the configuration with the performance metrics
+	// No simulation is used
+	bool compute_f_nosim(TS::Config& ip_config, const size_t num_f_evals);
 }
 
 #endif

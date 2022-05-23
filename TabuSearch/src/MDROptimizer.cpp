@@ -28,7 +28,7 @@ namespace TS {
 
 
 		// Create the Performances File Location
-		std::string perf_fileloc = "Results/" + filename + "Perf.csv";
+		std::string perf_fileloc = "Results/" + filename + "Performance.csv";
 
 		// Create and open a text file to store the performances of all the Visited Points
 		std::ofstream OpFilePerf(perf_fileloc);
@@ -39,7 +39,7 @@ namespace TS {
 		OpFilePerf << "PointID";
 
 		for (size_t i = 0; i < perf_size2; i++) {
-			OpFilePerf << ",Objective" << std::to_string(i + 1);
+			OpFilePerf << ",Objective" << std::to_string(i);
 		}
 
 		OpFilePerf << "\n";
@@ -48,7 +48,7 @@ namespace TS {
 			std::vector<MDR::PerfMetric> current_perfs2 =
 				configs[i].get_performances().get_perf_vector();
 
-			OpFilePerf << std::to_string(i + 1) << ",";
+			OpFilePerf << std::to_string(i) << ",";
 
 			for (size_t j = 0; j < current_perfs2.size() - 1; j++) {
 				OpFilePerf << std::to_string(current_perfs2[j].get_metric_val()) << ",";
@@ -67,7 +67,7 @@ namespace TS {
 
 
 		// Create the Performances File Location
-		std::string locs_fileloc = "Results/" + filename + "Loc.csv";
+		std::string locs_fileloc = "Results/" + filename + "Vector.csv";
 
 		// Create and open a text file to store the Coordinates of all the Visited Points
 		std::ofstream OpFileLoc(locs_fileloc);
@@ -78,7 +78,7 @@ namespace TS {
 		OpFileLoc << "PointID";
 
 		for (size_t i = 0; i < vars_size; i++) {
-			OpFileLoc << ",Variable" << std::to_string(i + 1);
+			OpFileLoc << ",Variable" << std::to_string(i);
 		}
 
 		OpFileLoc << "\n";
@@ -87,7 +87,7 @@ namespace TS {
 			std::vector<TS::Variable> current_vars =
 				configs[i].get_vars();
 
-			OpFileLoc << std::to_string(i + 1) << ",";
+			OpFileLoc << std::to_string(i) << ",";
 
 			for (size_t j = 0; j < current_vars.size() - 1; j++) {
 				OpFileLoc << std::to_string(current_vars[j].get_val()) << ",";
@@ -174,6 +174,9 @@ namespace TS {
 		// Store the number of variables
 		size_t num_vars = current_config.get_vars().size();
 
+		// Store whether the previous function evaluation was successful
+		bool f_eval_success = true;
+
 		// Store the previous move data
 		bool prev_increase = true;
 		size_t prev_idx = 1e10;
@@ -230,12 +233,17 @@ namespace TS {
 
 			// If all new points are either Tabu or Unfeasible, diversify and reduce if necessary
 			if (HJ_configs.size() < 1) {
-				m_LTM.diversify(current_config, m_generator);
+				
+				f_eval_success = false;
+				
+				while (!f_eval_success){
+					m_LTM.diversify(current_config, m_generator);
 
-				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
-				m_f_eval_num++;
-				current_config.initialize_ranks(m_dom_rels);
+					// Compute the objective function
+					f_eval_success = AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
+					m_f_eval_num++;
+					current_config.initialize_ranks(m_dom_rels);
+				}
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config_MDR(current_config);
@@ -258,6 +266,8 @@ namespace TS {
 				continue;
 			}
 
+			// Store whether a new configuration has been added to the MTM
+			bool new_MTM_config = false;
 
 			// Loop to figure out the best generated point
 			while (!move_on) {
@@ -292,6 +302,9 @@ namespace TS {
 
 					// Add the canidate points to the All Point Memory (APM) and update its rank
 					m_APM.add_config_update_ranks(candidate_config);
+
+					// Add the candidate point to the MTM if necessary
+					new_MTM_config = m_MTM.consider_config_MDR(candidate_config);
 
 					// Protect against going out of index range
 					if (i + 1 >= HJ_configs.size()) {
@@ -356,8 +369,7 @@ namespace TS {
 			// Update the move data
 			current_config.get_prev_move_data(prev_increase, prev_idx);
 			
-			// Add the current point to the MTM, STM and LTM
-			bool new_MTM_config = m_MTM.consider_config_MDR(current_config);
+			// Add the current point to the STM
 			m_STM.add_to_STM(current_config);
 			m_LTM.update_tally(current_config);
 
@@ -380,6 +392,12 @@ namespace TS {
 					AircraftEval::compute_f(next_config, m_sock, m_f_eval_num);
 					m_f_eval_num++;
 					next_config.initialize_ranks(m_dom_rels);
+					
+					// Add the canidate points to the All Point Memory (APM) and update its rank
+					m_APM.add_config_update_ranks(next_config);
+
+					// Add the point to the MTM
+					new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(next_config);
 
 					// Check whether this move dominates the current point
 					if (MDR::A_dominates_B_MDR(next_config.get_performances(),
@@ -391,13 +409,9 @@ namespace TS {
 						// Update the move data
 						current_config.get_prev_move_data(prev_increase, prev_idx);
 
-						// Add the current point to the MTM, STM and LTM
-						new_MTM_config = new_MTM_config || m_MTM.consider_config_MDR(current_config);
+						// Add the current point to the STM and LTM
 						m_STM.add_to_STM(current_config);
 						m_LTM.update_tally(current_config);
-
-						// Add the canidate points to the All Point Memory (APM) and update its rank
-						m_APM.add_config_update_ranks(current_config);
 					}
 				}
 			}
@@ -434,12 +448,16 @@ namespace TS {
 			
 			}
 			else if (m_counter == m_DIVERSIFY) {
-				m_LTM.diversify(current_config, m_generator);
+				f_eval_success = false;
 
-				// Compute the objective function
-				AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
-				m_f_eval_num++;
-				current_config.initialize_ranks(m_dom_rels);
+				while (!f_eval_success) {
+					m_LTM.diversify(current_config, m_generator);
+
+					// Compute the objective function
+					f_eval_success = AircraftEval::compute_f(current_config, m_sock, m_f_eval_num);
+					m_f_eval_num++;
+					current_config.initialize_ranks(m_dom_rels);
+				}
 
 				// Add the current point to the MTM, STM and LTM
 				m_MTM.consider_config_MDR(current_config);
