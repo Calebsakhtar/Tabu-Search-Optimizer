@@ -141,8 +141,8 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        // Simulate for 7 seconds
-        sleep(40); // 40
+        // Simulate for 50 seconds
+        sleep(45); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
@@ -277,10 +277,10 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = variables[0].get_val(); // 1400 km
-        const double ip_P_max = variables[1].get_val(); // 2050 kW
-        const double ip_h = variables[2].get_val(); // 6.096 km
-        const double ip_M = variables[3].get_val(); // 0.456
+        const double ip_range =   variables[0].get_val(); // 1400 km
+        const double ip_P_max =  variables[1].get_val(); // 2050 kW
+        const double ip_h =  variables[2].get_val(); // 6.096 km
+        const double ip_M =  variables[3].get_val(); // 0.456
         const double ip_H2_Pfrac = variables[4].get_val();
 
         // Initialize the conversion constants
@@ -295,11 +295,17 @@ namespace AircraftEval {
         const double Raymer_L_D_max = 16.43;
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
-        const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV)
-        const double c_H2 = 121.1; // MJ/kg (specific energy)
-        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey
+        const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV) (Data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html)
+        const double c_H2 = 121.1; // MJ/kg (specific energy) (Hand calculated with data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html
+        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey (Data from doi: https://doi.org/10.1016/0950-4214(93)80001-D and https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Nov/IRENA_Green_hydrogen_policy_2020.pdf)
         const double emissions_per_kgJA1 = 3.16; // See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
         const double eta_prop = 0.8;
+
+        // Initialize the Aircraft CG constants
+        const double x_LEMAC = 11.24; // 11.25 m (measured on pictures from https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf)
+        const double LEMAC = 2.3; // 2.32 m (approximate value measured on pictures from https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf)
+        const double FWLIM_LEMAC = 20; // Data from the ATR 72 FCOM: https://aviation-is.better-than.tv/atr72fcom.pdf
+        const double AFTLIM_LEMAC = 39; // Data from the ATR 72 FCOM: https://aviation-is.better-than.tv/atr72fcom.pdf
 
         // Initialize the variables that can be changed
         double L_D = 0.8 * Raymer_L_D_max;
@@ -310,6 +316,7 @@ namespace AircraftEval {
         double w_engine = 0; // kg
         double TAS = 0; // m/s
         double x_cg = 0; // m
+        double x_cg_LEMAC = 0; // % LEMAC
         double x_cg_nofuel = 0; // m
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
@@ -320,6 +327,7 @@ namespace AircraftEval {
         bool volume_violation = false;
         bool read_violation = false;
         bool ss_violation = false;
+        bool cg_violation = false;
 
         // Calculate the ISA values
         double ISA_T = 0;
@@ -368,7 +376,7 @@ namespace AircraftEval {
 
 
             // Make the load computations
-            AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
+            AircraftModel::compute_cg_loc_mass_pax(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
                 mass_nofuel, mass_payload, mass_JA1, mass_H2_net, op_num_pass, op_tank_l, mass_violation, 
                 volume_violation);
 
@@ -392,6 +400,14 @@ namespace AircraftEval {
             }
 
             // Check for CG violations
+            x_cg_LEMAC = 100 * (x_cg - x_LEMAC) / LEMAC;
+
+            if (x_cg_LEMAC < FWLIM_LEMAC || x_cg_LEMAC > AFTLIM_LEMAC) {
+                cg_violation = true;
+
+                std::cout << "CG Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                break;
+            }
 
             // Write the load data to the ACF file
             PlaneMakerTools::set_weight_data(x_cg_nofuel, mass_nofuel, acf_filepath);
@@ -433,7 +449,7 @@ namespace AircraftEval {
         // Initialize the performance metric vector
         std::vector<MDR::PerfMetric> perf_vect;
 
-        if (mass_violation || volume_violation || read_violation || ss_violation) {
+        if (mass_violation || volume_violation || read_violation || ss_violation || cg_violation) {
             op_L = 1e10;
             op_D = 1e10;
             op_Thrust = 1e10;
@@ -585,11 +601,17 @@ namespace AircraftEval {
         const double Raymer_L_D_max = 16.43;
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
-        const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV)
-        const double c_H2 = 121.1; // MJ/kg (specific energy)
-        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey
-        const double emissions_per_kgJA1 = 3.16;// See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
+        const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV) (Data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html)
+        const double c_H2 = 121.1; // MJ/kg (specific energy) (Hand calculated with data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html
+        const double emissions_per_kgH2 = 0.; // 0 for green, 0.97 for blue, 9.71 for grey (Data from doi: https://doi.org/10.1016/0950-4214(93)80001-D and https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Nov/IRENA_Green_hydrogen_policy_2020.pdf)
+        const double emissions_per_kgJA1 = 3.16; // See https://www.icao.int/environmental-protection/CarbonOffset/Documents/Methodology%20ICAO%20Carbon%20Calculator_v10-2017.pdf
         const double eta_prop = 0.8;
+
+        // Initialize the Aircraft CG constants
+        const double x_LEMAC = 11.24; // 11.25 m (measured on pictures from https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf)
+        const double LEMAC = 2.3; // 2.32 m (approximate value measured on pictures from https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf)
+        const double FWLIM_LEMAC = 20; // Data from the ATR 72 FCOM: https://aviation-is.better-than.tv/atr72fcom.pdf
+        const double AFTLIM_LEMAC = 39; // Data from the ATR 72 FCOM: https://aviation-is.better-than.tv/atr72fcom.pdf
 
         // Initialize the variables that can be changed
         double L_D = 15; //0.8 * Raymer_L_D_max;
@@ -600,6 +622,7 @@ namespace AircraftEval {
         double w_engine = 0; // kg
         double TAS = 0; // m/s
         double x_cg = 0; // m
+        double x_cg_LEMAC = 0; // % LEMAC
         double x_cg_nofuel = 0; // m
         double mass_nofuel = 0; // kg
         double mass_payload = 0; // kg
@@ -608,6 +631,7 @@ namespace AircraftEval {
         double H2_mprop = 0;
         bool mass_violation = false;
         bool volume_violation = false;
+        bool cg_violation = false;
 
         // Calculate the ISA values
         double ISA_T = 0;
@@ -645,20 +669,33 @@ namespace AircraftEval {
         double op_vz = 1e10;
 
         // Perform one "Tuning" iteration, then evaluate
-        for (size_t i = 0; i < 2; i++) {
+        for (size_t i = 0; i < 10; i++) {
             // Calculate the fuel weight
             w_ratio = AircraftModel::breguet_prop_wratio(eta_prop, BSFC_hybrid_cruise, L_D, ip_range * 1000);
             w_fuel = mass_total * (1. - 1. / w_ratio);
 
+            double new_mass = 0;
 
             // Make the load computations
-            AircraftModel::compute_cg_loc_mass(w_engine, w_fuel, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
+            AircraftModel::compute_cg_loc_mass_pax(w_engine, w_fuel, ip_H2_Pfrac, x_cg, new_mass, x_cg_nofuel,
                 mass_nofuel, mass_payload, mass_JA1, mass_H2_net, op_num_pass, op_tank_l, mass_violation, 
                 volume_violation);
+
+            mass_total = 0.5 * (new_mass + mass_total);
 
             // Check for an appropriate kerosene mass
             if (mass_JA1 > 5000) {
                 mass_violation = true;
+            }
+
+            // Check for CG violations
+            x_cg_LEMAC = 100 * (x_cg - x_LEMAC) / LEMAC;
+
+            if (x_cg_LEMAC < FWLIM_LEMAC || x_cg_LEMAC > AFTLIM_LEMAC) {
+                cg_violation = true;
+
+                std::cout << "CG Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
+                break;
             }
 
             // Check for mass and volume violations
@@ -681,7 +718,7 @@ namespace AircraftEval {
         // Initialize the performance metric vector
         std::vector<MDR::PerfMetric> perf_vect;
 
-        if (mass_violation || volume_violation) {
+        if (mass_violation || volume_violation || cg_violation) {
             op_L = 1e10;
             op_D = 1e10;
             op_Thrust = 1e10;
