@@ -280,11 +280,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = 600;// variables[0].get_val(); // 1400 km
         const double ip_P_max =  variables[0].get_val(); // 2050 kW
         const double ip_h =  variables[1].get_val(); // 6.096 km
         const double ip_M =  variables[2].get_val(); // 0.456
         const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = 600;// variables[0].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -591,11 +591,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = variables[0].get_val(); // 1400 km
-        const double ip_P_max = variables[1].get_val(); // 2050 kW
-        const double ip_h = variables[2].get_val(); // 6.096 km
-        const double ip_M = variables[3].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[4].get_val();
+        const double ip_P_max = variables[0].get_val(); // 2050 kW
+        const double ip_h = variables[1].get_val(); // 6.096 km
+        const double ip_M = variables[2].get_val(); // 0.456
+        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = variables[4].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -859,11 +859,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = variables[0].get_val(); // 1400 km
-        const double ip_P_max = variables[1].get_val(); // 2050 kW
-        const double ip_h = variables[2].get_val(); // 6.096 km
-        const double ip_M = variables[3].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[4].get_val();
+        const double ip_P_max = variables[0].get_val(); // 2050 kW
+        const double ip_h = variables[1].get_val(); // 6.096 km
+        const double ip_M = variables[2].get_val(); // 0.456
+        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = variables[4].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
