@@ -151,8 +151,8 @@ namespace AircraftEval {
         sendDREF(sock, ap_state_dref, &ap_vspeed_val, 1); // Send data
 
 
-        // Simulate for 50 seconds
-        sleep(40); // 40
+        // Simulate for 40 seconds
+        sleep(35); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
@@ -445,7 +445,7 @@ namespace AircraftEval {
             op_h = op_h / 1000;
             ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
             ss_violation |= !(abs(abs(ip_h) - abs(op_h)) / abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
+            ss_violation |= !(abs(op_vz) < 0.5);
 
             if (ss_violation) {
                 std::cout << "Steady-State Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
@@ -1038,7 +1038,7 @@ namespace AircraftEval {
             op_h = op_h / 1000;
             ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
             ss_violation |= ! (abs(abs(ip_h) - abs(op_h))/abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
+            ss_violation |= !(abs(op_vz) < 0.5);
             
 
             if (ss_violation) {
