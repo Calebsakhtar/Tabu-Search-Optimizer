@@ -40,7 +40,7 @@ namespace AircraftEval {
 
         // Set simulation speed
         const char* simspeed_dref = "sim/time/sim_speed"; // real DREF
-        float simspeed_val = 6.;
+        float simspeed_val = 3.;
         sendDREF(sock, simspeed_dref, &simspeed_val, 1); // Send data
 
         const char* speed_dref = "sim/flightmodel/position/local_vx"; // real DREF
@@ -69,6 +69,9 @@ namespace AircraftEval {
         float ap_hdg_val = 43; // in ft/min above sea level
         sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
 
+        float ap_vnav_val = 131072; // arm vnav
+        sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
+
         float ap_hnav_val = 256; // arm hnav
         sendDREF(sock, ap_state_dref, &ap_hnav_val, 1); // Send data
 
@@ -77,9 +80,6 @@ namespace AircraftEval {
 
         float ap_hdg2_val = 4; // wing level hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
-
-        float ap_vnav_val = 64; // arm vnav
-        sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
 	}
 
     void reset_sim(XPCSocket sock, const double& ip_h, const double& ip_TAS) {
@@ -108,7 +108,7 @@ namespace AircraftEval {
 
         // Set simulation speed
         const char* simspeed_dref = "sim/time/sim_speed"; // real DREF
-        float simspeed_val = 6.;
+        float simspeed_val = 3;
         sendDREF(sock, simspeed_dref, &simspeed_val, 1); // Send data
 
         const char* reload_comm = "sim/operation/reload_aircraft_no_art";
@@ -141,11 +141,8 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        float ap_vnav_val = 64; // arm vnav
-        sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
-
-        // Simulate for 30 seconds
-        sleep(50); // 40
+        // Simulate for 50 seconds
+        sleep(45); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
@@ -170,7 +167,7 @@ namespace AircraftEval {
         op_Thrust = static_cast<double>(Thrust);
 
         float TAS = 1e10; // m/s
-        const char* dref_TAS = "sim/flightmodel/position/true_airspeed"; 
+        const char* dref_TAS = "sim/flightmodel/position/local_vx"; 
         comm_status += getDREF(sock, dref_TAS, &TAS, &size);
         op_TAS = static_cast<double>(TAS);
 
@@ -180,7 +177,7 @@ namespace AircraftEval {
         op_h = static_cast<double>(h) / 3.281; // m
 
         float vz = 1e10; // m/s
-        const char* dref_vz = "sim/flightmodel/position/vh_ind";
+        const char* dref_vz = "sim/flightmodel/position/local_vz";
         comm_status += getDREF(sock, dref_vz, &vz, &size);
         op_vz = static_cast<double>(vz);
 
@@ -280,11 +277,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = 600;// variables[0].get_val(); // 1400 km
-        const double ip_P_max =  variables[0].get_val(); // 2050 kW
-        const double ip_h =  variables[1].get_val(); // 6.096 km
-        const double ip_M =  variables[2].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range =   variables[0].get_val(); // 1400 km
+        const double ip_P_max =  variables[1].get_val(); // 2050 kW
+        const double ip_h =  variables[2].get_val(); // 6.096 km
+        const double ip_M =  variables[3].get_val(); // 0.456
+        const double ip_H2_Pfrac = variables[4].get_val();
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -435,10 +432,9 @@ namespace AircraftEval {
             }
 
             // Check to see whether the aircraft is in steady state
-            op_h = op_h / 1000;
-            ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
-            ss_violation |= !(abs(abs(ip_h) - abs(op_h)) / abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
+            ss_violation = !similar(abs(op_TAS),abs(TAS), 0.05);
+            ss_violation &= (op_vz > 0.26);
+            ss_violation &= !similar(abs(ip_h), abs(op_h), 0.05);
 
             if (ss_violation) {
                 std::cout << "Steady-State Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
@@ -892,7 +888,7 @@ namespace AircraftEval {
         // Initialize the variables that can be changed
         double L_D = 0.8 * Raymer_L_D_max;
         double mass_total = MTOW;
-        double BSFC_hybrid_cruise_design = 0;
+        double BSFC_hybrid_cruise = 0;
         double w_ratio = 0;
         double w_fuel = 0; // kg
         double w_engine = 0; // kg
@@ -922,11 +918,8 @@ namespace AircraftEval {
         // Calculate the TAS of the aircraft
         TAS = ISA_a * desired_m; // m/s
 
-        // Calculate the hybrid BSFC at the design point
-        BSFC_hybrid_cruise_design = AircraftModel::calculate_hybrid_BSFC(ip_H2_Pfrac, ip_h, ip_P_max);
-
-        // Calculate the hybrid BSFC at the off-design point
-        const double BSFC_hybrid_cruise = AircraftModel::calculate_hybrid_BSFC(ip_H2_Pfrac, desired_h, ip_P_max);
+        // Calculate the hybrid BSFC
+        BSFC_hybrid_cruise = AircraftModel::calculate_hybrid_BSFC(ip_H2_Pfrac, ip_h, ip_P_max);
 
         // Compute the engine weight
         w_engine = AircraftModel::correl_turboprop_mass(ip_P_max);
@@ -957,8 +950,8 @@ namespace AircraftEval {
         for (size_t i = 0; i < 2; i++) {
 
             // Calculate the fuel weight at the design point
-            double w_ratio_design = AircraftModel::breguet_prop_wratio(eta_prop, BSFC_hybrid_cruise_design, L_D, ip_range * 1000);
-            double w_fuel_design = mass_total * (1. - 1. / w_ratio_design);
+            double w_ratio_design = AircraftModel::breguet_prop_wratio(eta_prop, BSFC_hybrid_cruise, L_D, ip_range * 1000);
+            double w_fuel_design = mass_total * (1. - 1. / w_ratio);
 
             double mass_H2_design = 0;
             int num_pass_design = 1;
@@ -967,6 +960,9 @@ namespace AircraftEval {
             AircraftModel::compute_cg_loc_mass_pax(w_engine, w_fuel_design, ip_H2_Pfrac, x_cg, mass_total, x_cg_nofuel,
                 mass_nofuel, mass_payload, mass_JA1, mass_H2_design, num_pass_design, op_tank_l, mass_violation,
                 volume_violation);
+
+            // Calculate the hybrid BSFC at the off-design point
+            BSFC_hybrid_cruise = AircraftModel::calculate_hybrid_BSFC(ip_H2_Pfrac, desired_h, ip_P_max);
 
             // Calculate the fuel weight at the off-design point
             w_ratio = AircraftModel::breguet_prop_wratio(eta_prop, BSFC_hybrid_cruise, L_D, desired_range * 1000);
@@ -1028,11 +1024,9 @@ namespace AircraftEval {
             }
 
             // Check to see whether the aircraft is in steady state
-            op_h = op_h / 1000;
-            ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
-            ss_violation |= ! (abs(abs(ip_h) - abs(op_h))/abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
-            
+            ss_violation = !similar(abs(op_TAS), abs(TAS), 0.05);
+            ss_violation &= (op_vz > 0.26);
+            ss_violation &= !similar(abs(ip_h), abs(op_h), 0.05);
 
             if (ss_violation) {
                 std::cout << "Steady-State Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
