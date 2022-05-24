@@ -26,6 +26,10 @@ namespace AircraftEval {
 	// update the configuration with the performance metrics
 	// No simulation is used
 	bool compute_f_nosim(TS::Config& ip_config, const size_t num_f_evals);
+
+	// Variation of compute_f that allows off-design aircraft performance to be evaluated
+	bool evaluate_off_design_aircraft(TS::Config& ip_config, const XPCSocket sock, const size_t num_f_evals,
+		const double& desired_range, const double& desired_h, const double& desired_m);
 }
 
 #endif
