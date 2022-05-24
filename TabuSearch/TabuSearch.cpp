@@ -138,7 +138,7 @@ int main()
 {
 
     const bool TS = true;
-    const bool offdesign = true;
+    const bool offdesign = false;
 
     if (offdesign) {
 
@@ -287,7 +287,7 @@ int main()
         vars.push_back(var_h);
         vars.push_back(var_M);
         vars.push_back(var_H2_Pfrac);
-        vars.push_back(var_range);
+        // vars.push_back(var_range);
 
         // Make the initial point from the variables
         TS::Config initial_point(vars);
