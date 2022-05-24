@@ -138,7 +138,7 @@ int main()
 {
 
     const bool TS = true;
-    const bool offdesign = true;
+    const bool offdesign = false;
 
     if (offdesign) {
 
@@ -193,11 +193,11 @@ int main()
         TS::Variable var_H2_Pfrac(false, feas_regs_H2_Pfrac, stepsize_min_H2_Pfrac, start_H2_Pfrac,
             stepsize_H2_Pfrac, name_H2_Pfrac);
 
-        vars.push_back(var_range);
         vars.push_back(var_Pmax);
         vars.push_back(var_h);
         vars.push_back(var_M);
         vars.push_back(var_H2_Pfrac);
+        vars.push_back(var_range);
 
         // Make the initial point from the variables
         TS::Config initial_point(vars);
@@ -283,11 +283,11 @@ int main()
         TS::Variable var_H2_Pfrac(false, feas_regs_H2_Pfrac, stepsize_min_H2_Pfrac, start_H2_Pfrac,
             stepsize_H2_Pfrac, name_H2_Pfrac);
 
-        vars.push_back(var_range);
         vars.push_back(var_Pmax);
         vars.push_back(var_h);
         vars.push_back(var_M);
         vars.push_back(var_H2_Pfrac);
+        // vars.push_back(var_range);
 
         // Make the initial point from the variables
         TS::Config initial_point(vars);
@@ -364,6 +364,7 @@ int main()
             vars.push_back(var_h);
             vars.push_back(var_M);
             vars.push_back(var_H2_Pfrac);
+            vars.push_back(var_range);
 
             // Make the initial point from the variables
             TS::Config initial_point(vars);

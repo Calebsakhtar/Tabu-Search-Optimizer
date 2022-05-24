@@ -23,7 +23,7 @@ namespace AircraftEval {
         }
     }
 
-	void init_simulator(XPCSocket sock) {
+    void init_simulator(XPCSocket sock) {
         // Set Location/Orientation (sendPOSI)
         // Set Up Position Array
         double POSI[7] = { 0.0 };
@@ -57,10 +57,6 @@ namespace AircraftEval {
         float ap_mode_val = 2; // off=0, flight director=1, on=2
         sendDREF(sock, ap_mode_dref, &ap_mode_val, 1); // Send data
 
-        const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
-        float ap_alt_val = 21000; // in ft above sea level
-        sendDREF(sock, ap_alt_dref, &ap_alt_val, 1); // Send data
-
         const char* ap_vs_dref = "sim/cockpit/autopilot/vertical_velocity"; // AP Vertical Speed
         float ap_vs_val = 1000; // in ft/min above sea level
         sendDREF(sock, ap_vs_dref, &ap_vs_val, 1); // Send data
@@ -68,6 +64,16 @@ namespace AircraftEval {
         const char* ap_hdg_dref = "sim/cockpit/autopilot/heading"; // AP Heading
         float ap_hdg_val = 43; // in ft/min above sea level
         sendDREF(sock, ap_hdg_dref, &ap_hdg_val, 1); // Send data
+
+        float ap_vnav_val = 32; // arm alt hold
+        sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
+
+        const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
+        float ap_alt_val = 21000; // in ft above sea level
+        sendDREF(sock, ap_alt_dref, &ap_alt_val, 1); // Send data
+
+        float ap_vspeed_val = 16; // arm alt hold
+        sendDREF(sock, ap_state_dref, &ap_vspeed_val, 1); // Send data
 
         float ap_hnav_val = 256; // arm hnav
         sendDREF(sock, ap_state_dref, &ap_hnav_val, 1); // Send data
@@ -77,21 +83,18 @@ namespace AircraftEval {
 
         float ap_hdg2_val = 4; // wing level hold
         sendDREF(sock, ap_state_dref, &ap_hdg2_val, 1); // Send data
-
-        float ap_vnav_val = 64; // arm vnav
-        sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
-	}
+    }
 
     void reset_sim(XPCSocket sock, const double& ip_h, const double& ip_TAS) {
         // Resets the simulator (at the appropriate height ip_h and true airspeed ip_TAS).
         //
         // Height ip_h is in m
         // True Airspeed ip_TAS is in m/s
-        
+
         // Convert inputs to float and also convert height to meters
         float height = 1000 * static_cast<float>(ip_h); // m
         float TAS = static_cast<float>(ip_TAS); // m/s
-        
+
         // Set Location/Orientation (sendPOSI)
         // Set Up Position Array
         double POSI[7] = { 0.0 };
@@ -128,12 +131,6 @@ namespace AircraftEval {
         float ap_airspeed_val = static_cast<float>(IAS) * 1.94384; // IAS, knots
         sendDREF(sock, ap_airspeed_dref, &ap_airspeed_val, 1); // Send data
 
-        // Convert the height to feet
-        const float m_to_feet = 3.28084;
-        height *= m_to_feet;
-        const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
-        sendDREF(sock, ap_alt_dref, &height, 1); // Send data
-
         const char* ap_vs_dref = "sim/cockpit/autopilot/vertical_velocity"; // AP Vertical Speed
         float ap_vs_val = 1000; // in ft/min above sea level
         sendDREF(sock, ap_vs_dref, &ap_vs_val, 1); // Send data
@@ -141,11 +138,21 @@ namespace AircraftEval {
         float ap_athr_val = 1; // change autothrottle
         sendDREF(sock, ap_state_dref, &ap_athr_val, 1); // Send data
 
-        float ap_vnav_val = 64; // arm vnav
+        float ap_vnav_val = 32; // arm alt hold
         sendDREF(sock, ap_state_dref, &ap_vnav_val, 1); // Send data
 
-        // Simulate for 30 seconds
-        sleep(50); // 40
+        // Convert the height to feet
+        const float m_to_feet = 3.28084;
+        height *= m_to_feet;
+        const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
+        sendDREF(sock, ap_alt_dref, &height, 1); // Send data
+
+        float ap_vspeed_val = 16; // arm alt hold
+        sendDREF(sock, ap_state_dref, &ap_vspeed_val, 1); // Send data
+
+
+        // Simulate for 40 seconds
+        sleep(35); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
@@ -280,11 +287,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = 600;// variables[0].get_val(); // 1400 km
         const double ip_P_max =  variables[0].get_val(); // 2050 kW
         const double ip_h =  variables[1].get_val(); // 6.096 km
         const double ip_M =  variables[2].get_val(); // 0.456
         const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = 800;// variables[0].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -438,7 +445,7 @@ namespace AircraftEval {
             op_h = op_h / 1000;
             ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
             ss_violation |= !(abs(abs(ip_h) - abs(op_h)) / abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
+            ss_violation |= !(abs(op_vz) < 0.5);
 
             if (ss_violation) {
                 std::cout << "Steady-State Violation in Aircraft " << std::to_string(num_f_evals) << "\n";
@@ -591,11 +598,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = variables[0].get_val(); // 1400 km
-        const double ip_P_max = variables[1].get_val(); // 2050 kW
-        const double ip_h = variables[2].get_val(); // 6.096 km
-        const double ip_M = variables[3].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[4].get_val();
+        const double ip_P_max = variables[0].get_val(); // 2050 kW
+        const double ip_h = variables[1].get_val(); // 6.096 km
+        const double ip_M = variables[2].get_val(); // 0.456
+        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = variables[4].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -859,11 +866,11 @@ namespace AircraftEval {
 
         // Extract the optimization variables from the current configuration
         std::vector<TS::Variable> variables = ip_config.get_vars();
-        const double ip_range = variables[0].get_val(); // 1400 km
-        const double ip_P_max = variables[1].get_val(); // 2050 kW
-        const double ip_h = variables[2].get_val(); // 6.096 km
-        const double ip_M = variables[3].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[4].get_val();
+        const double ip_P_max = variables[0].get_val(); // 2050 kW
+        const double ip_h = variables[1].get_val(); // 6.096 km
+        const double ip_M = variables[2].get_val(); // 0.456
+        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_range = variables[4].get_val(); // 1400 km
 
         // Initialize the conversion constants
         const double kW_to_HP = 1.34102;
@@ -1031,7 +1038,7 @@ namespace AircraftEval {
             op_h = op_h / 1000;
             ss_violation = !(abs(abs(TAS) - abs(op_TAS)) / abs(TAS) < 0.05);
             ss_violation |= ! (abs(abs(ip_h) - abs(op_h))/abs(ip_h) < 0.05);
-            ss_violation |= !(abs(op_vz) < 0.3);
+            ss_violation |= !(abs(op_vz) < 0.5);
             
 
             if (ss_violation) {
