@@ -138,7 +138,7 @@ int main()
 {
 
     const bool TS = true;
-    const bool offdesign = false;
+    const bool offdesign = true;
 
     if (offdesign) {
 
@@ -148,7 +148,7 @@ int main()
         // Create a variable for the range
         std::array<double, 2> feas_reg_range = { 500, 2800 };
         std::vector<std::array<double, 2>> feas_regs_range = { feas_reg_range };
-        const double start_range = 1400; // km
+        const double start_range = 1430; // km
         const double stepsize_range = 400; // km
         const double stepsize_min_range = 100; // km
         const std::string name_range = "Range (km)";
@@ -168,7 +168,7 @@ int main()
         // Create a variable for the Cruise Altitude
         std::array<double, 2> feas_reg_h = { 4.500, 7.620 }; // km (15000 - 25000 ft)
         std::vector<std::array<double, 2>> feas_regs_h = { feas_reg_h };
-        const double start_h = 6.100; // km (20000 ft)
+        const double start_h = 5.18; // 17000 ft or 6.100 km (20000 ft)
         const double stepsize_h = 0.620; // km
         const double stepsize_min_h = 0.300; // km
         const std::string name_h = "Cruise Altitude (km)";
@@ -177,7 +177,7 @@ int main()
         // Create a variable for the Cruise Mach Number
         std::array<double, 2> feas_reg_M = { 0.4, 0.67 };
         std::vector<std::array<double, 2>> feas_regs_M = { feas_reg_M };
-        const double start_M = 0.45;
+        const double start_M = 0.44;
         const double stepsize_M = 0.2;
         const double stepsize_min_M = 0.05;
         const std::string name_M = "Cruise Mach Number";
@@ -186,7 +186,7 @@ int main()
         // Create a variable for the Hydrogen power fraction
         std::array<double, 2> feas_reg_H2_Pfrac = { 0, 1 };
         std::vector<std::array<double, 2>> feas_regs_H2_Pfrac = { feas_reg_H2_Pfrac };
-        const double start_H2_Pfrac = 0.5;
+        const double start_H2_Pfrac = 0;
         const double stepsize_H2_Pfrac = 0.4;
         const double stepsize_min_H2_Pfrac = 0.05;
         const std::string name_H2_Pfrac = "Hydrogen Power Fraction";
@@ -219,9 +219,9 @@ int main()
             printf("Initial connection successful.\n");
         }
 
-        const double& desired_range = 1;
-        const double& desired_h = 6.100; // km
-        const double& desired_m = 0.45;
+        const double& desired_range = 800; //km
+        const double& desired_h = start_h; // km
+        const double& desired_m = start_M;
 
         AircraftEval::evaluate_off_design_aircraft(initial_point, sock, 2810, desired_range,
             desired_h, desired_m);
@@ -293,10 +293,10 @@ int main()
         TS::Config initial_point(vars);
 
         // Specify the MDR Layers of Dominance
-        MDR::DomRel first_layer(7, 3); // 3, 4
-        MDR::DomRel second_layer(2, 8); // 0, 4
-        MDR::DomRel third_layer(9, 2); // 1, 2
-        std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer }; //{ first_layer, second_layer, third_layer }
+        MDR::DomRel first_layer(7, 3); // 7, 3
+        MDR::DomRel second_layer(7, 2); // 8, 2 or 7, 2
+        MDR::DomRel third_layer(7, 7); // 
+        std::vector<MDR::DomRel> dom_rels = { first_layer, second_layer}; //{ first_layer, second_layer, third_layer }
 
         // Specify the TS Parameters
         size_t STM_size = 7;
@@ -305,7 +305,7 @@ int main()
         size_t INTENSIFY = 10;
         size_t DIVERSIFY = 15;
         size_t REDUCE = 25;
-        size_t max_eval_num = 300;
+        size_t max_eval_num = 600;
         size_t HJ_num = 8;
 
         // Set up the simulation
@@ -337,7 +337,7 @@ int main()
         // Print the relevant quantities for MATLAB Visualization
         Optimizer.print_pareto_front();
         Optimizer.print_visited_pts_loc_perf();
-        Optimizer.print_pareto_front_layers();
+        //Optimizer.print_pareto_front_layers();
     }
     else {
 

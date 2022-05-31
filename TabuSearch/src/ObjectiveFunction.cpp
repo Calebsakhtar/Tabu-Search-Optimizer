@@ -147,12 +147,12 @@ namespace AircraftEval {
         const char* ap_alt_dref = "sim/cockpit/autopilot/altitude"; // AP Altitude
         sendDREF(sock, ap_alt_dref, &height, 1); // Send data
 
-        float ap_vspeed_val = 16; // arm alt hold
+        float ap_vspeed_val = 16; // engage v/s mode
         sendDREF(sock, ap_state_dref, &ap_vspeed_val, 1); // Send data
 
 
         // Simulate for 40 seconds
-        sleep(35); // 40
+        sleep(40); // 40
     }
 
     bool get_metrics(XPCSocket sock, double& op_L, double& op_D, double& op_Thrust, double& op_TAS,
@@ -290,7 +290,7 @@ namespace AircraftEval {
         const double ip_P_max =  variables[0].get_val(); // 2050 kW
         const double ip_h =  variables[1].get_val(); // 6.096 km
         const double ip_M =  variables[2].get_val(); // 0.456
-        const double ip_H2_Pfrac = variables[3].get_val();
+        const double ip_H2_Pfrac =  variables[3].get_val();
         const double ip_range = 800;// variables[0].get_val(); // 1400 km
 
         // Initialize the conversion constants
@@ -1099,11 +1099,11 @@ namespace AircraftEval {
             op_payfrac = mass_payload / mass_total;
 
             op_emmiss = mass_JA1 * emissions_per_kgJA1 + mass_H2_net * emissions_per_kgH2;
-            op_emmiss_paykm = op_emmiss / (mass_payload * ip_range);
-            op_emmiss_paxkm = op_emmiss / (op_num_pass * ip_range);
+            op_emmiss_paykm = op_emmiss / (mass_payload * desired_range);
+            op_emmiss_paxkm = op_emmiss / (op_num_pass * desired_range);
 
-            op_NRG_paykm = op_NRG / (mass_payload * ip_range);
-            op_NRG_paxkm = op_NRG / (op_num_pass * ip_range);
+            op_NRG_paykm = op_NRG / (mass_payload * desired_range);
+            op_NRG_paxkm = op_NRG / (op_num_pass * desired_range);
 
             op_L_D = L_D;
         }
