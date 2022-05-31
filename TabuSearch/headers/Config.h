@@ -10,7 +10,18 @@
 
 namespace TS {
 
-	//using Config = std::vector<Variable>;
+	// Although this implementation of TS is my own, the flow diagrams of the
+	// following papers were used as a base for the implementation:
+	// 
+	// S.Phillips and J.P.Jarrett, “Enhancing Designer Understanding by Combining
+	// Multiple Dominance Relationsand Tabu Search,” in AIAA Scitech 2020 Forum.
+	// doi:10.2514/6.2020-0161
+	// 
+	//
+	// D. Jaeggi, G. Parks, T. Kipouros, and P. Clarkson, “A Multi-objective Tabu Search
+	// Algorithm for Constrained Optimisation Problems, ” Lecture Notes in Computer
+	//	Science, vol. 3410, pp. 490–504, Mar. 2005. doi: 10.1007/978-3-540-31880-4_34.
+	//
 
 	class Config {
 		std::vector<Variable> m_vars; // Stores the ranges of feasible region
