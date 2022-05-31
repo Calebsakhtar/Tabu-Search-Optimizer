@@ -3,6 +3,15 @@
 
 namespace AircraftEval {
 
+
+    // Useful websites:
+    //
+    // https://developer.x-plane.com/article/movingtheplane/
+    // https://developer.x-plane.com/datarefs/
+    // https://www.siminnovations.com/xplane/command/
+    //
+
+    // USELESS/ WIP
     void display_aircraft_data(const double& x_CG_nofuel, const double& M_nofuel, 
         const double& ip_h, const double& ip_TAS, const double& ip_BSFC_full, 
         const double& ip_BSFC_full_low, const double& P_max, double M_fuel, 
