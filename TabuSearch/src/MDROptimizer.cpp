@@ -292,6 +292,7 @@ namespace TS {
 
 				// If there are more points than the maximum to be considered, choose the points
 				// to be considered at random by shuffling the H&J vector with the seeded generator
+				// https://stackoverflow.com/a/36922712
 				if (HJ_configs.size() > m_HJ_num) {
 					std::shuffle(HJ_configs.begin(), HJ_configs.end(), m_generator);
 				}
@@ -342,7 +343,7 @@ namespace TS {
 				// Recover the dominant configurations
 				dominant_configs = candidate_config_memory.get_configs();
 
-				// Shuffle the vector of dominant configurations if necessary
+				// Shuffle the vector of dominant configurations if necessary https://stackoverflow.com/a/36922712
 				if (dominant_configs.size() > 1) {
 					std::shuffle(dominant_configs.begin(), dominant_configs.end(), m_generator);
 				}
