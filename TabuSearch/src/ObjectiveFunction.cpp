@@ -203,6 +203,7 @@ namespace AircraftEval {
     }
 
     void write_current_aircraft_data(const TS::Config& config, const int& p) {
+        // fstream concepts from https://www.cplusplus.com/doc/tutorial/files/
 
         // Make the file termination
         std::string filename = std::to_string(p);
@@ -301,8 +302,8 @@ namespace AircraftEval {
             "C:\\CalebData\\Games\\X-Plane 11\\Aircraft\\Extra Aircraft\\ATR72-500\\ATR72.acf";
 
         // Initialize the true aircraft constants
-        const double MTOW = 22000; // kg
-        const double Raymer_L_D_max = 16.43;
+        const double MTOW = 22000; // kg https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf
+        const double Raymer_L_D_max = 16.43; // Raymer, Daniel P. Aircraft Design: A Conceptual Approach. Washington, D.C: American Institute of Aeronautics and Astronautics, 1989. Print.
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
         const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV) (Data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html)
@@ -608,8 +609,8 @@ namespace AircraftEval {
         const double kW_to_HP = 1.34102;
 
         // Initialize the true aircraft constants
-        const double MTOW = 22000; // kg
-        const double Raymer_L_D_max = 16.43;
+        const double MTOW = 22000; // kg https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf
+        const double Raymer_L_D_max = 16.43; // Raymer, Daniel P. Aircraft Design: A Conceptual Approach. Washington, D.C: American Institute of Aeronautics and Astronautics, 1989. Print.
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
         const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV) (Data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html)
@@ -880,8 +881,8 @@ namespace AircraftEval {
             "C:\\CalebData\\Games\\X-Plane 11\\Aircraft\\Extra Aircraft\\ATR72-500\\ATR72.acf";
 
         // Initialize the true aircraft constants
-        const double MTOW = 22000; // kg
-        const double Raymer_L_D_max = 16.43;
+        const double MTOW = 22000; // kg https://www.atr-aircraft.com/wp-content/uploads/2020/07/72-500.pdf
+        const double Raymer_L_D_max = 16.43; // Raymer, Daniel P. Aircraft Design: A Conceptual Approach. Washington, D.C: American Institute of Aeronautics and Astronautics, 1989. Print.
         const double S_wing = 61; // m^2
         const double x_H2_tanks = 12.202; // m
         const double c_JA1 = 43.0; // MJ/kg (specific energy = LCV) (Data from https://www.engineeringtoolbox.com/fuels-higher-calorific-values-d_169.html)

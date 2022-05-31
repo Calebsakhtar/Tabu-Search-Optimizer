@@ -48,6 +48,8 @@ namespace TS {
 		size_t perf_size2 =
 			configs[0].get_performances().get_perf_vector().size();
 
+
+		// fstream concepts from https://www.cplusplus.com/doc/tutorial/files/
 		OpFilePerf << "PointID";
 
 		for (size_t i = 0; i < perf_size2; i++) {
@@ -87,6 +89,7 @@ namespace TS {
 		auto vars_size =
 			configs[0].get_vars().size();
 
+		// fstream concepts from https://www.cplusplus.com/doc/tutorial/files/
 		OpFileLoc << "PointID";
 
 		for (size_t i = 0; i < vars_size; i++) {
@@ -492,6 +495,16 @@ namespace TS {
 	}
 
 	// Find all pareto front layers
+	//
+	// Disclaimer: this function has been inspired by the algorithms in 
+	//
+	// L. W. Cook, K. E. Willcox, and J. P. Jarrett,
+	// “Design optimization using multiple dominance relations,”
+	// International Journal for Numerical Methods in Engineering, vol. 121,
+	// no. 11, pp. 2481–2502, 2020. doi: https://doi.org/10.1002/nme.6316.
+	//
+	// This function contains implementations of some aspects of Algorithms 1-4 in
+	// the paper above
 	bool MDROptimizer::find_pareto_front_layers(std::vector<std::vector<Config>>&
 		op_vect) const {
 
